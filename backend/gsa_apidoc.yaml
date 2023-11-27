@@ -1,0 +1,1397 @@
+openapi: 3.0.3
+info:
+  title: API GymSenApp
+  description: |-
+    La API del proyecto GymSenApp integra un conjunto de elementos que crean el entorno propicio para el correcto funcionamiento de este elemento clave para el despliegue de la aplicación.
+    
+    Para complementar el desarrollo de la API fue creada la presente documentación con Swagger, sirviendo de corroboración del correcto funcionamiento de la API y de los elementos que la componen.
+    
+    _Dicho esto, pasemos a la documentación_
+  version: 1.0.0
+servers:
+  - url: http://localhost:9300/
+tags:
+  - name: Tipos de usuarios
+    description: Este endpoint maneja lo relacionado a la obtención de los roles o tipos de usuarios que el sistema maneja.
+  - name: Antecedentes
+    description: Este endpoint maneja lo relacionado a la obtención de los antecedentes de salud que el usuario pudo o puede tener, los cuales pueden interferir en la definición de la rutina de ejercicios que vaya a seguir el aprendiz.
+  - name: Usuarios
+    description: Este endpoint maneja lo relacionado a los usuarios del sistema.
+  - name: Anuncios
+    description: Este endpoint maneja lo relacionado a los anuncios del sistema.
+  - name: Planificador de rutinas
+    description: Este endpoint maneja lo relacionado al planificador de rutinas del sistema.
+  - name: Asistencias
+    description: Este endpoint maneja lo relacionado a los registros de asistencia al gimnasio del sistema.
+
+paths:
+
+  /tipos_usuarios:
+    get:
+      tags:
+        - Tipos de usuarios
+      summary: Retorna los tipos de usuarios
+      description: Con esta dirección se obtiene la información de los roles que maneja el sistema
+      responses:
+        200:
+          description: (OK) La información de los tipos de usuarios se obtuvo de manera satisfactoria
+          content:
+            aplication/json:
+              schema:
+                $ref: '#/components/schemas/ExitoGetTiposUsuarios'
+        400:
+          $ref: '#/components/responses/BadRequest'
+        401:
+          $ref: '#/components/responses/Unauthorized'
+        404:
+          $ref: '#/components/responses/NotFound'
+        500:
+          $ref: '#/components/responses/ServerError'
+
+  /antecedentes:
+    get:
+      tags:
+        - Antecedentes
+      summary: Retorna los antecedentes
+      description: Con esta dirección se obtiene la información de los antecedentes de salud que maneja el sistema
+      responses:
+        200:
+          description: (OK) La información de los antecedentes de salud se obtuvo de manera satisfactoria
+          content:
+            aplication/json:
+              schema:
+                $ref: '#/components/schemas/ExitoGetAntecedentes'
+        400:
+          $ref: '#/components/responses/BadRequest'
+        401:
+          $ref: '#/components/responses/Unauthorized'
+        404:
+          $ref: '#/components/responses/NotFound'
+        500:
+          $ref: '#/components/responses/ServerError'
+          
+  /validar_correo:
+    post:
+      tags:
+        - Usuarios
+      summary: Corroboración de que el correo ni la identificación existan en el sistema
+      description: Con esta dirección se pretende corroborar que ni el correo electrónico ni la identificación digitada en el registro existan en el sistema, con el objetivo de que no hayan varias cuentas en el sistema con un mismo correo y/o con una misma identificación
+      requestBody:
+        description: Objeto de datos a corroborar
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ValidacionesIdCorreo'
+        required: true
+      responses:
+        200:
+          description: (OK) Se ejecutó la validación correctamente
+          content:
+            aplication/json:
+              schema:
+                $ref: '#/components/schemas/ExitoValidacionCorreo'
+        400:
+          $ref: '#/components/responses/BadRequest'
+        401:
+          $ref: '#/components/responses/Unauthorized'
+        404:
+          $ref: '#/components/responses/NotFound'
+        500:
+          $ref: '#/components/responses/ServerError'
+  
+  /validar_rec_contrasena:
+    post:
+      tags:
+        - Usuarios
+      summary: Corroboración de que el usuario que quiere recuperar la contraseña es el propietario de la cuenta
+      description: Con esta dirección se pretende asegurar la información de los clientes que se han registrado en el sistema, de tal forma que si alguien intenta recuperar la contraseña de una cuenta, se corroborará que la información que digite el usuario sea la propia de la cuenta, permitiendo la recuperación de la cuenta solo por parte del propietario de la misma
+      requestBody:
+        description: Objeto de datos a corroborar
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ValidacionesIdCorreo'
+        required: true
+      responses:
+        200:
+          description: (OK) Se ejecutó la validación correctamente
+          content:
+            aplication/json:
+              schema:
+                $ref: '#/components/schemas/ExitoValidacionRecuperacionContrasena'
+        400:
+          $ref: '#/components/responses/BadRequest'
+        401:
+          $ref: '#/components/responses/Unauthorized'
+        404:
+          $ref: '#/components/responses/NotFound'
+        500:
+          $ref: '#/components/responses/ServerError'
+  
+  /validar_rec_contrasena/{id_user}:
+    put:
+      tags:
+        - Usuarios
+      summary: Actualización de contraseñas
+      description: Con esta dirección se actualizará la contraseña de una cuenta, de tal forma que se reciba la identificación del usuario por medio del parámetro de entrada, y en el cuerpo de la petición se reciba la contraseña con la que se actualizará la contraseña actual de la cuenta
+      parameters:
+        - $ref: '#/components/parameters/id_user'
+      requestBody:
+        description: Objeto de datos en el cuerpo de la petición (en este caso contiene la nueva contraseña que tendrá la cuenta)
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RecuperacionContrasena'
+        required: true
+      responses:
+        200:
+          description: (OK) Se actualizó la contraseña correctamente
+          content:
+            aplication/json:
+              schema:
+                $ref: '#/components/schemas/ExitoRecuperacionContrasena'
+        400:
+          $ref: '#/components/responses/BadRequest'
+        401:
+          $ref: '#/components/responses/Unauthorized'
+        404:
+          $ref: '#/components/responses/NotFound'
+        500:
+          $ref: '#/components/responses/ServerError'
+
+  /registrarse:
+    post:
+      tags:
+        - Usuarios
+      summary: Registro de usuarios dentro del sistema
+      description: Con esta dirección se pretende añadir nuevos usuarios al sistema
+      requestBody:
+        description: Objeto de datos en el cuerpo de la petición (en este caso contiene los datos del usuario a registrar en el sistema)
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Registro'
+        required: true
+      responses:
+        200:
+          description: (OK) Se ejecutó la petición de creación del registro correctamente
+          content:
+            aplication/json:
+              schema:
+                $ref: '#/components/schemas/ExitoRegistro'
+        400:
+          $ref: '#/components/responses/BadRequest'
+        401:
+          $ref: '#/components/responses/Unauthorized'
+        404:
+          $ref: '#/components/responses/NotFound'
+        500:
+          $ref: '#/components/responses/ServerError'
+
+  /iniciar_sesion:
+    post:
+      tags:
+        - Usuarios
+      summary: Corroboración de credenciales para el inicio de sesión de usuarios dentro del sistema
+      description: Con esta dirección se corroboran las credenciales enviadas por los usuarios (correo y contraseña) para poder emitir una respuesta sobre la admisión del usuario al sistema
+      requestBody:
+        description: Objeto de datos en el cuerpo de la petición (en este caso contiene el correo y la contraseña que el usuario digitó para entrar al sistema)
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/InicioSesion'
+        required: true
+      responses:
+        200:
+          description: (OK) Se ejecutó la petición de corroboración de credenciales para el inicio de sesión correctamente
+          content:
+            aplication/json:
+              schema:
+                $ref: '#/components/schemas/ExitoInicioSesion'
+        400:
+          $ref: '#/components/responses/BadRequest'
+        401:
+          $ref: '#/components/responses/Unauthorized'
+        404:
+          $ref: '#/components/responses/NotFound'
+        500:
+          $ref: '#/components/responses/ServerError'
+  
+  /get_rol_id:
+    post:
+      tags:
+        - Usuarios
+      summary: Obtención del id y rol de la persona iniciando sesión
+      description: Con esta dirección se obtiene el rol y la identificación de la persona que inició sesión en el sistema, de tal forma que se le permita acceder a las vistas correspondientes a su rol y a las actividades que, dependiendo del tipo de usuario que sea, pueda realizar
+      requestBody:
+        description: Objeto de datos en el cuerpo de la petición (en este caso contiene el correo y la contraseña que el usuario digitó para iniciar sesión en el sistema)
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/InicioSesion'
+        required: true
+      responses:
+        200:
+          description: (OK) Se ejecutó la petición de obtención del id y rol del usuario correctamente
+          content:
+            aplication/json:
+              schema:
+                $ref: '#/components/schemas/ExitoGetRolId'
+        400:
+          $ref: '#/components/responses/BadRequest'
+        401:
+          $ref: '#/components/responses/Unauthorized'
+        404:
+          $ref: '#/components/responses/NotFound'
+        500:
+          $ref: '#/components/responses/ServerError'
+
+  /usuarios_listado:
+    get:
+      tags:
+        - Usuarios
+      summary: Obtención de los usuarios del sistema
+      description: Con esta dirección se obtiene la información de los usuarios registrados en el sistema
+      responses:
+        200:
+          description: (OK) Se ejecutó la petición de obtención de los usuarios del sistema de manera satisfactoria
+          content:
+            aplication/json:
+              schema:
+                $ref: '#/components/schemas/ExitoGetUsuarios'
+        400:
+          $ref: '#/components/responses/BadRequest'
+        401:
+          $ref: '#/components/responses/Unauthorized'
+        404:
+          $ref: '#/components/responses/NotFound'
+        500:
+          $ref: '#/components/responses/ServerError'
+  
+  /usuarios_listado/{id_user}:
+    get:
+      tags:
+        - Usuarios
+      summary: Obtención de información de un usuario del sistema
+      description: Con esta dirección se obtiene la información de uno de los usuarios registrados en el sistema
+      parameters:
+        - $ref: '#/components/parameters/id_user'
+      responses:
+        200:
+          description: (OK) Se ejecutó la petición de obtención de la información del usuario de manera satisfactoria
+          content:
+            aplication/json:
+              schema:
+                $ref: '#/components/schemas/ExitoGetUsuario'
+        400:
+          $ref: '#/components/responses/BadRequest'
+        401:
+          $ref: '#/components/responses/Unauthorized'
+        404:
+          $ref: '#/components/responses/NotFound'
+        500:
+          $ref: '#/components/responses/ServerError'
+          
+  /usuarios_edicion/{id_user}:
+    put:
+      tags:
+        - Usuarios
+      summary: Actualización de usuarios
+      description: Con esta dirección se actualizarán los usuarios del sistema, de tal forma que se reciba la identificación del usuario por medio del parámetro de entrada, y en el cuerpo de la petición se reciban los datos del usuario actualizados
+      parameters:
+        - $ref: '#/components/parameters/id_user'
+      requestBody:
+        description: Objeto de datos en el cuerpo de la petición (en este caso contiene la información del usuario a actualizar)
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UsuariosActualizacion'
+        required: true
+      responses:
+        200:
+          description: (OK) Se ejecutó la petición de actualización del usuario correctamente
+          content:
+            aplication/json:
+              schema:
+                $ref: '#/components/schemas/ExitoUsuariosActualizacion'
+        400:
+          $ref: '#/components/responses/BadRequest'
+        401:
+          $ref: '#/components/responses/Unauthorized'
+        404:
+          $ref: '#/components/responses/NotFound'
+        500:
+          $ref: '#/components/responses/ServerError'
+
+  /anuncios_listado:
+    get:
+      tags:
+        - Anuncios
+      summary: Obtención de los anuncios del sistema
+      description: Con esta dirección se obtiene la información de los anuncios guardados en la base de datos y que se le muestran a los usuarios del sistema
+      responses:
+        200:
+          description: (OK) Se ejecutó la petición de obtención de los anuncios del sistema de manera satisfactoria
+          content:
+            aplication/json:
+              schema:
+                $ref: '#/components/schemas/ExitoGetAnuncios'
+        400:
+          $ref: '#/components/responses/BadRequest'
+        401:
+          $ref: '#/components/responses/Unauthorized'
+        404:
+          $ref: '#/components/responses/NotFound'
+        500:
+          $ref: '#/components/responses/ServerError'
+
+  /anuncios_listado/{id_anunc}:
+    get:
+      tags:
+        - Anuncios
+      summary: Obtención de información de un anuncio del sistema
+      description: Con esta dirección se obtiene la información de uno de los anuncios guardados en la base de datos y que se le muestran a los usuarios del sistema (esto último cuando el estado del anuncio no es inactivo)
+      parameters:
+        - $ref: '#/components/parameters/id_anunc'
+      responses:
+        200:
+          description: (OK) Se ejecutó la petición de obtención de la información del anuncio de manera satisfactoria
+          content:
+            aplication/json:
+              schema:
+                $ref: '#/components/schemas/ExitoGetAnuncios'
+        400:
+          $ref: '#/components/responses/BadRequest'
+        401:
+          $ref: '#/components/responses/Unauthorized'
+        404:
+          $ref: '#/components/responses/NotFound'
+        500:
+          $ref: '#/components/responses/ServerError'
+
+  /anuncios_imagenes/{img_anunc}:
+    get:
+      tags:
+        - Anuncios
+      summary: Corroboración inexistencia de imagen a ser agregada al sistema
+      description: Con esta dirección se corrborará que el nombre de la imagen que se esté agregando al anuncio no exista dentro del sistema, buscando no sobreescribir imágenes
+      parameters:
+        - $ref: '#/components/parameters/img_anunc'
+      responses:
+        200:
+          description: (OK) Se ejecutó la petición de corroboración de inexistencia de la imagen en el sistema correctamente
+          content:
+            aplication/json:
+              schema:
+                $ref: '#/components/schemas/ExitoCorroboracionImg'
+        400:
+          $ref: '#/components/responses/BadRequest'
+        401:
+          $ref: '#/components/responses/Unauthorized'
+        404:
+          $ref: '#/components/responses/NotFound'
+        500:
+          $ref: '#/components/responses/ServerError'
+  
+  /anuncios_subir_img:
+    post:
+      tags:
+        - Anuncios
+      summary: Corroboración subida correcta de la imagen al servidor
+      description: Con esta dirección se obtiene una confirmación sobre la consecución del proceso de subida de una imagen al servidor
+      #consumes:
+      #  - multipart/form-data
+      requestBody:
+        description: Objeto de datos en el cuerpo de la petición (en este caso contiene la imagen a subir al servidor)
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/AnunciosSubirImg'
+        required: false
+      responses:
+        200:
+          description: (OK) Se ejecutó la petición de procesamiento de la imagen y su guardado en el servidor correctamente
+          content:
+            aplication/json:
+              schema:
+                $ref: '#/components/schemas/ExitoAnunciosSubirImg'
+        400:
+          $ref: '#/components/responses/BadRequest'
+        401:
+          $ref: '#/components/responses/Unauthorized'
+        404:
+          $ref: '#/components/responses/NotFound'
+        500:
+          $ref: '#/components/responses/ServerError'
+  
+  /anuncios_agregar:
+    post:
+      tags:
+        - Anuncios
+      summary: Agregar anuncios al sistema
+      description: Con esta dirección se agregarán anuncios al sistema
+      requestBody:
+        description: Objeto de datos en el cuerpo de la petición (en este caso contiene la información del anuncio a subir a la base de datos)
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AnunciosAgregar'
+        required: true
+      responses:
+        200:
+          description: (OK) Se ejecutó la petición creación del nuevo anuncio correctamente
+          content:
+            aplication/json:
+              schema:
+                $ref: '#/components/schemas/ExitoAnunciosAgregar'
+        400:
+          $ref: '#/components/responses/BadRequest'
+        401:
+          $ref: '#/components/responses/Unauthorized'
+        404:
+          $ref: '#/components/responses/NotFound'
+        500:
+          $ref: '#/components/responses/ServerError'
+  
+  /anuncios_edicion/{id_anunc}:
+    put:
+      tags:
+        - Anuncios
+      summary: Actualización de anuncios
+      description: Con esta dirección se actualizarán los anuncios del sistema, de tal forma que se reciba el identificador del anuncio por medio del parámetro de entrada, y en el cuerpo de la petición se reciban los datos del anuncio actualizados
+      parameters:
+        - $ref: '#/components/parameters/id_anunc'
+      requestBody:
+        description: Objeto de datos en el cuerpo de la petición (en este caso contiene la información del anuncio a actualizar)
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AnunciosActualizacion'
+        required: true
+      responses:
+        200:
+          description: (OK) Se ejecutó la petición de actualización del anuncio correctamente
+          content:
+            aplication/json:
+              schema:
+                $ref: '#/components/schemas/ExitoAnunciosActualizacion'
+        400:
+          $ref: '#/components/responses/BadRequest'
+        401:
+          $ref: '#/components/responses/Unauthorized'
+        404:
+          $ref: '#/components/responses/NotFound'
+        500:
+          $ref: '#/components/responses/ServerError'
+  
+  /anuncios_eliminacion/{id_anunc}:
+    delete:
+      tags:
+        - Anuncios
+      summary: Eliminación de anuncios del sistema
+      description: Con esta dirección se eliminan anuncios del sistema, cambiándoles el estado a inactivo; con lo cual no serán mostrados a los usuarios del sistema
+      parameters:
+        - $ref: '#/components/parameters/id_anunc'
+      responses:
+        200:
+          description: (OK) Se ejecutó la petición de eliminación del anuncio de manera satisfactoria
+          content:
+            aplication/json:
+              schema:
+                $ref: '#/components/schemas/ExitoAnunciosEliminacion'
+        400:
+          $ref: '#/components/responses/BadRequest'
+        401:
+          $ref: '#/components/responses/Unauthorized'
+        404:
+          $ref: '#/components/responses/NotFound'
+        500:
+          $ref: '#/components/responses/ServerError'
+  
+  /musculos:
+    get:
+      tags:
+        - Planificador de rutinas
+      summary: Obtención de los músculos del sistema
+      description: Con esta dirección se obtiene la información de los músculos guardados en la base de datos y que se le muestran a los aprendices en el selector
+      responses:
+        200:
+          description: (OK) Se ejecutó la petición de obtención de los músculos del sistema de manera satisfactoria
+          content:
+            aplication/json:
+              schema:
+                $ref: '#/components/schemas/ExitoGetMusculos'
+        400:
+          $ref: '#/components/responses/BadRequest'
+        401:
+          $ref: '#/components/responses/Unauthorized'
+        404:
+          $ref: '#/components/responses/NotFound'
+        500:
+          $ref: '#/components/responses/ServerError'
+  
+  /planificador:
+    post:
+      tags:
+        - Planificador de rutinas
+      summary: Agregar un registro en el planificador
+      description: Con esta dirección se crearán registros en la tabla del planificador, haciendo seguimiento a los músculos que los aprendices seleccionan en el selector para planificar sus rutinas
+      requestBody:
+        description: Objeto de datos en el cuerpo de la petición (en este caso contiene la identificación del aprendiz y el músculo elegido)
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PlanificadorAgregar'
+        required: true
+      responses:
+        200:
+          description: (OK) Se ejecutó la petición de creación del registro en el planificador correctamente
+          content:
+            aplication/json:
+              schema:
+                $ref: '#/components/schemas/ExitoPlanificadorAgregar'
+        400:
+          $ref: '#/components/responses/BadRequest'
+        401:
+          $ref: '#/components/responses/Unauthorized'
+        404:
+          $ref: '#/components/responses/NotFound'
+        500:
+          $ref: '#/components/responses/ServerError'
+  
+  /ejercicios_musculo/{musculo}:
+    get:
+      tags:
+        - Planificador de rutinas
+      summary: Obtención de ejercicios que permitan trabajar el músculo elegido por el aprendiz
+      description: Con esta dirección se obtiene la información de los ejercicios que permitan trabajar el músculo elegido por el aprendiz en el selector
+      parameters:
+        - $ref: '#/components/parameters/musculo'
+      responses:
+        200:
+          description: (OK) Se ejecutó la petición de obtención de los ejercicios correspondientes al músculo elegido por el aprendiz de manera satisfactoria
+          content:
+            aplication/json:
+              schema:
+                $ref: '#/components/schemas/ExitoGetEjercicios'
+        400:
+          $ref: '#/components/responses/BadRequest'
+        401:
+          $ref: '#/components/responses/Unauthorized'
+        404:
+          $ref: '#/components/responses/NotFound'
+        500:
+          $ref: '#/components/responses/ServerError'
+  
+  /asistencia_listado:
+    get:
+      tags:
+        - Asistencias
+      summary: Obtención de los registros de asistencia del sistema
+      description: Con esta dirección se obtiene la información de los registros de asistencia guardados en la base de datos
+      responses:
+        200:
+          description: (OK) Se ejecutó la petición de obtención de los registros de asistencia del sistema de manera satisfactoria
+          content:
+            aplication/json:
+              schema:
+                $ref: '#/components/schemas/ExitoGetAsistencias'
+        400:
+          $ref: '#/components/responses/BadRequest'
+        401:
+          $ref: '#/components/responses/Unauthorized'
+        404:
+          $ref: '#/components/responses/NotFound'
+        500:
+          $ref: '#/components/responses/ServerError'
+  
+  /asistencia_listado/{id_registro_asis}:
+    get:
+      tags:
+        - Asistencias
+      summary: Obtención de la información de un registro de asistencia del sistema
+      description: Con esta dirección se obtiene la información de uno de los registros de asistencia del sistema
+      parameters:
+        - $ref: '#/components/parameters/id_registro_asis'
+      responses:
+        200:
+          description: (OK) Se ejecutó la petición de obtención de la información del registro de asistencia de manera satisfactoria
+          content:
+            aplication/json:
+              schema:
+                $ref: '#/components/schemas/ExitoGetAsistencia'
+        400:
+          $ref: '#/components/responses/BadRequest'
+        401:
+          $ref: '#/components/responses/Unauthorized'
+        404:
+          $ref: '#/components/responses/NotFound'
+        500:
+          $ref: '#/components/responses/ServerError'
+  
+  /asistencia_listado_aprend:
+    post:
+      tags:
+        - Asistencias
+      summary: Corroboración existencia del aprendiz dentro del sistema
+      description: Con esta dirección se corroborará la existencia del aprendiz al que se le está tomando la asistencia dentro del sistema de información, de tal forma que se ejecutará una busqueda para determinar si la identificación enviada corresponde a la de un usuario activo en el sistema con el rol de aprendiz dentro del mismo
+      requestBody:
+        description: Objeto de datos en el cuerpo de la petición (en este caso contiene la identificación del aprendiz)
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AsistenciaCorroboracionAprendiz'
+        required: true
+      responses:
+        200:
+          description: (OK) Se ejecutó la petición de corroboración de existencia del usuario como aprendiz dentro del sistema satisfactoriamente
+          content:
+            aplication/json:
+              schema:
+                $ref: '#/components/schemas/ExitoAsistenciaCorroboracionAprendiz'
+        400:
+          $ref: '#/components/responses/BadRequest'
+        401:
+          $ref: '#/components/responses/Unauthorized'
+        404:
+          $ref: '#/components/responses/NotFound'
+        500:
+          $ref: '#/components/responses/ServerError'
+  
+  /asistencia_agregar:
+    post:
+      tags:
+        - Asistencias
+      summary: Agregar un registro de asistencia en el sistema
+      description: Con esta dirección se agregarán registros de asistencia de apredices al gimnasio del CEET dentro del sistema
+      requestBody:
+        description: Objeto de datos en el cuerpo de la petición (en este caso contiene la información del registro de asistencia a agregar dentro del sistema)
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AsistenciaAgregar'
+        required: true
+      responses:
+        200:
+          description: (OK) Se ejecutó la petición de creación del registro de asistencia satisfactoriamente
+          content:
+            aplication/json:
+              schema:
+                $ref: '#/components/schemas/ExitoAsistenciaAgregar'
+        400:
+          $ref: '#/components/responses/BadRequest'
+        401:
+          $ref: '#/components/responses/Unauthorized'
+        404:
+          $ref: '#/components/responses/NotFound'
+        500:
+          $ref: '#/components/responses/ServerError'
+  
+  /asistencia_edicion/{id_registro_asis}:
+    put:
+      tags:
+        - Asistencias
+      summary: Actualización de registros de asistencia
+      description: Con esta dirección se actualizarán los registros de asistencias del sistema, de tal forma que se reciba el identificador del registro de asistencia por medio del parámetro de entrada, y en el cuerpo de la petición se reciban los datos del registro actualizados
+      parameters:
+        - $ref: '#/components/parameters/id_registro_asis'
+      requestBody:
+        description: Objeto de datos en el cuerpo de la petición (en este caso contiene la información del registro de asistencia a actualizar)
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AsistenciaActualizacion'
+        required: true
+      responses:
+        200:
+          description: (OK) Se ejecutó la petición de actualización del registro de asistencia correctamente
+          content:
+            aplication/json:
+              schema:
+                $ref: '#/components/schemas/ExitoAsistenciaActualizacion'
+        400:
+          $ref: '#/components/responses/BadRequest'
+        401:
+          $ref: '#/components/responses/Unauthorized'
+        404:
+          $ref: '#/components/responses/NotFound'
+        500:
+          $ref: '#/components/responses/ServerError'
+  
+  /asistencia_eliminacion/{id_registro_asis}:
+    delete:
+      tags:
+        - Asistencias
+      summary: Eliminación de registros de asistencia del sistema
+      description: Con esta dirección se eliminan registros de asistencia del sistema, cambiándoles el estado a inactivo
+      parameters:
+        - $ref: '#/components/parameters/id_registro_asis'
+      responses:
+        200:
+          description: (OK) Se ejecutó la petición de eliminación del registro de asistencia de manera satisfactoria
+          content:
+            aplication/json:
+              schema:
+                $ref: '#/components/schemas/ExitoAsistenciaEliminacion'
+        400:
+          $ref: '#/components/responses/BadRequest'
+        401:
+          $ref: '#/components/responses/Unauthorized'
+        404:
+          $ref: '#/components/responses/NotFound'
+        500:
+          $ref: '#/components/responses/ServerError'
+
+components:
+
+  responses:
+    Unauthorized:
+      description: (Unauthorized) no hay autorización para llamar al servicio
+    
+    NotFound:
+      description: (NotFound) no se encontró la información
+    
+    BadRequest:
+      description: (BadRequest) los datos enviados son incorrectos o hay datos obligatorios no enviados
+      
+    ServerError:
+      description: (ServerError) Error en el servidor
+  
+  parameters:
+    id_user:
+      name: id_user
+      in: path
+      description: Identificación del usuario pasada como parámetro
+      required: true
+      schema:
+        type: integer
+        example: 1
+        
+    img_anunc:
+      name: img_anunc
+      in: path
+      description: Nombre de una imagen para un anuncio pasada como parámetro
+      required: true
+      schema:
+        type: string
+        example: atencionvacacional.jpg
+        
+    id_anunc:
+      name: id_anunc
+      in: path
+      description: Identificador único de un anuncio pasado como parámetro
+      required: true
+      schema:
+        type: integer
+        example: 1
+    
+    musculo:
+      name: musculo
+      in: path
+      description: Músculo elegido por el aprendiz dentro del selector de músculos del sistema
+      required: true
+      schema:
+        type: string
+        example: Cuadriceps
+    
+    id_registro_asis:
+      name: id_registro_asis
+      in: path
+      description: Identificador único del registro de asistencia pasado como parámetro
+      required: true
+      schema:
+        type: integer
+        example: 1
+
+  schemas:
+  
+    ExitoGetTiposUsuarios:
+      type: object
+      properties:
+        cod_tipo_user:
+          type: integer
+          description: Código identificador del tipo de usuario
+          example: 1
+        tipo_user:
+          type: string
+          description: Nombre del tipo de usuario
+          example: administrador
+          
+    ExitoGetAntecedentes:
+      type: object
+      properties:
+        antecedente:
+          type: string
+          description: Nombre del antecedente de salud
+          example: Asma
+
+    ValidacionesIdCorreo:
+      type: object
+      properties:
+        id_user:
+          type: integer
+          description: Identificación del usuario
+          example: 1028763822
+        correo_sena_user:
+          type: string
+          description: Correo de dominio SENA del usuario
+          example: a@soy.sena.edu.co
+      required:
+        - id_user
+        - correo_sena_user
+    
+    RecuperacionContrasena:
+      type: object
+      properties:
+        contrasena:
+          type: string
+          description: Nueva contraseña de la cuenta del usuario
+          example: usu1123
+    
+    Registro:
+      type: object
+      properties:
+        id_user:
+          type: integer
+          description: Identificación del usuario
+          example: 1028763822
+        nom1_user:
+          type: string
+          description: Primer nombre del usuario
+          example: Jhon
+        nom2_user:
+          type: string
+          description: Segundo nombre del usuario
+          example: Aldair
+        ape1_user:
+          type: string
+          description: Primer apellido del usuario
+          example: Cubidez
+        ape2_user:
+          type: string
+          description: Segundo apellido del usuario
+          example: Buitrago
+        correo_sena_user:
+          type: string
+          description: Correo de dominio SENA del usuario
+          example: jcub@soy.sena.edu.co
+        contrasena:
+          type: string
+          description: Contraseña que tendrá la cuenta del usuario
+          example: 123
+        fk_anteced_salud_sel:
+          type: string
+          description: Antecedente de salud del usuario indicado en el selector
+          example: Asma
+        anteced_salud_inp:
+          type: string
+          description: Antecedente(s) de salud del usuario indicado(s) en el campo adicional diseñado para informar sobre antecedentes que no estén en el selector o cuando el usuario tenga varios antecedentes
+          example: ninguno
+      required:
+        - id_user
+        - nom1_user
+        - ape1_user
+        - correo_sena_user
+        - contrasena
+        - fk_anteced_salud_sel
+    
+    InicioSesion:
+      type: object
+      properties:
+        correo_sena_user:
+          type: string
+          description: Correo de dominio SENA del usuario
+          example: jcub@soy.sena.edu.co
+        contrasena:
+          type: string
+          description: Contraseña de la cuenta del usuario
+          example: 123
+      required:
+        - correo_sena_user
+        - contrasena
+        
+    UsuariosActualizacion:
+      type: object
+      properties:
+        fk_tipo_user:
+          type: integer
+          description: Identificador del tipo de usuario
+          example: 1
+        nom1_user:
+          type: string
+          description: Primer nombre del usuario
+          example: Juanito
+        nom2_user:
+          type: string
+          description: segundo nombre del usuario
+          example: NULL
+        ape1_user:
+          type: string
+          description: Primer apellido del usuario
+          example: Lopez
+        ape2_user:
+          type: string
+          description: Segundo apellido del usuario
+          example: Mesa
+        correo_sena_user:
+          type: string
+          description: Correo de dominio SENA del usuario
+          example: a@soy.sena.edu.co
+        fk_anteced_salud_sel:
+          type: string
+          description: Antecedente de salud del usuario indicado en el selector
+          example: Asma
+        anteced_salud_inp:
+          type: string
+          description: Antecedente(s) de salud del usuario indicado(s) en el campo adicional diseñado para informar sobre antecedentes que no estén en el selector o cuando el usuario tenga varios antecedentes
+          example: Operación de una rodilla
+        estado_user:
+          type: integer
+          description: Estado del usuario dentro del sistema (activo o inactivo)
+          example: 1
+      required:
+        - fk_tipo_user
+        - nom1_user
+        - ape1_user
+        - correo_sena_user
+        - fk_anteced_salud_sel
+        - estado_user
+    
+    AnunciosSubirImg:
+      type: object
+      properties:
+        file:
+          type: array
+          items:
+            type: string
+            format: binary
+    
+    AnunciosAgregar:
+      type: object
+      properties:
+        fk_id_admin_anunc:
+          type: integer
+          description: Identificación del administrador que creó el anuncio
+          example: 1
+        titulo_anunc:
+          type: string
+          description: Título del anuncio
+          example: ¡Importante!
+        desc_anunc:
+          type: string
+          description: Descripción del anuncio
+          example: Se encuentran en reparación dos caminadoras del gimnasio. Por favor, tenga en cuenta flexibilizar su rutina para que pueda con sus compañeros compartir las máquinas disponibles. Gracias.
+        img_anunc:
+          type: string
+          description: Nombre de la imagen guardada en el servidor que corresponde a la imagen del anuncio
+          example: imagenanuncio.jpg
+      required:
+        - fk_id_admin_anunc
+        - titulo_anunc
+        - desc_anunc
+        - img_anunc
+
+    AnunciosActualizacion:
+      type: object
+      properties:
+        fk_id_admin_anunc:
+          type: integer
+          description: Identificación del administrador que creó el anuncio
+          example: 1
+        titulo_anunc:
+          type: string
+          description: Título del anuncio
+          example: Ten en cuenta... ¡Editado!
+        desc_anunc:
+          type: string
+          description: Descripción del anuncio
+          example: Por situaciones adversas, el gimnasio no estará disponible en las mañanas hasta nuevo aviso. Pedimos excusas por esta situación. Gracias.
+        img_anunc:
+          type: string
+          description: Nombre de la imagen guardada en el servidor que corresponde a la imagen del anuncio
+          example: cinco.jpg
+        estado_anunc:
+            type: integer
+            description: Estado del anuncio dentro del sistema (si fue eliminado)
+            example: 1
+      required:
+        - id_anunc
+        - fk_id_admin_anunc
+        - titulo_anunc
+        - desc_anunc
+        - img_anunc
+        - estado_anunc
+        
+    PlanificadorAgregar:
+      type: object
+      properties:
+        id_aprend:
+          type: integer
+          description: Identificación del aprendiz que seleccionó el músculo
+          example: 2
+        musculo:
+          type: string
+          description: Nombre del músculo elegido por el aprendiz en el selector
+          example: Triceps
+    
+    AsistenciaCorroboracionAprendiz:
+      type: object
+      properties:
+        fk_id_aprend_asis:
+          type: integer
+          description: Identificación del aprendiz al que se le van a corroborar las credenciales
+          example: 2
+
+    AsistenciaAgregar:
+      type: object
+      properties:
+          id_instruc_asis:
+            type: integer
+            description: Identificación del instructor que registró la asistencia
+            example: 3
+          fk_id_aprend_asis:
+            type: integer
+            description: Identificación del aprendiz al que se le tomó la asistencia
+            example: 1028763822
+          fecha_asis:
+            type: string
+            description: Fecha en la que se tomó el registro de asistencia
+            example: 2023-11-12T05:00:00.000Z
+
+    AsistenciaActualizacion:
+      type: object
+      properties:
+        id_instruc_asis:
+          type: integer
+          description: Identificación del instructor que registró la asistencia
+          example: 3
+        fk_id_aprend_asis:
+          type: integer
+          description: Identificación del aprendiz al que se le tomó la asistencia
+          example: 1028763822
+        fecha_asis:
+          type: string
+          description: Fecha en la que se tomó el registro de asistencia
+          example: 2023-11-23T05:00:00.000Z
+        estado_asis:
+            type: integer
+            description: Estado del registro de asistencia dentro del sistema (si fue eliminado)
+            example: 1
+
+    ExitoValidacionCorreo:
+      type: string
+      description: Resultado de la corroboración de la existencia de la identificación y/o correo dentro del usuario dentro del sistema
+      example: Disponible
+
+    ExitoValidacionRecuperacionContrasena:
+      type: string
+      description: Resultado de la corroboración de la existencia de una cuenta con la identificación y correo digitados por el usuario para la recuperación de la contraseña de la cuenta
+      example: Se encontró
+    
+    ExitoRecuperacionContrasena:
+      type: string
+      description: Resultado del proceso de actualización de la contraseña de la cuenta del usuario
+      example: Se actualizó correctamente la contraseña
+    
+    ExitoRegistro:
+      type: string
+      description: Resultado del proceso de creación de una cuenta para el usuario
+      example: Se agregó correctamente el usuario
+    
+    ExitoInicioSesion:
+      type: string
+      description: Resultado del proceso de corroboración de la existencia de la cuenta dentro de la base de datos
+      example: Se encontró
+    
+    ExitoGetRolId:
+      type: array
+      items:
+        type: object
+        properties:
+          fk_tipo_user:
+            type: integer
+            description: Rol del usuario que está iniciando sesión en el sistema
+            example: 2
+            #enum: [1,2,3]
+          id_user:
+            type: integer
+            description: Id del usuario que está iniciando sesión en el sistema
+            example: 1028763822
+    
+    ExitoGetUsuarios:
+      type: array
+      items:
+        type: object
+        properties:
+          id_user:
+            type: integer
+            description: Identificación del usuario
+            example: 1028763822
+          tipo_user:
+            type: string
+            description: Tipo de usuario
+            example: Administrador
+          nom1_user:
+            type: string
+            description: Primer nombre del usuario
+            example: Jhon
+          ape1_user:
+            type: string
+            description: Primer apellido del usuario
+            example: Cubidez
+          ape2_user:
+            type: string
+            description: Segundo apellido del usuario
+            example: Buitrago
+          correo_sena_user:
+            type: string
+            description: Correo de dominio SENA del usuario
+            example: jcub@soy.sena.edu.co
+          fk_anteced_salud_sel:
+            type: string
+            description: Antecedente de salud del usuario indicado en el selector
+            example: Asma
+          anteced_salud_inp:
+            type: string
+            description: Antecedente(s) de salud del usuario indicado(s) en el campo adicional diseñado para informar sobre antecedentes que no estén en el selector o cuando el usuario tenga varios antecedentes
+            example: ninguno
+          estado_user:
+            type: integer
+            description: Estado del usuario dentro del sistema (activo o inactivo)
+            example: 1
+  
+    ExitoGetUsuario:
+      type: array
+      items:
+        type: object
+        properties:
+          id_user:
+            type: integer
+            description: Identificación del usuario
+            example: 1
+          fk_tipo_user:
+            type: integer
+            description: Identificador del tipo de usuario
+            example: 1
+          tipo_user:
+            type: string
+            description: Tipo de usuario
+            example: Administrador
+          nom1_user:
+            type: string
+            description: Primer nombre del usuario
+            example: Juanito
+          nom2_user:
+            type: string
+            description: segundo nombre del usuario
+            example: NULL
+          ape1_user:
+            type: string
+            description: Primer apellido del usuario
+            example: Lopez
+          ape2_user:
+            type: string
+            description: Segundo apellido del usuario
+            example: Mesa
+          correo_sena_user:
+            type: string
+            description: Correo de dominio SENA del usuario
+            example: a@soy.sena.edu.co
+          fk_anteced_salud_sel:
+            type: string
+            description: Antecedente de salud del usuario indicado en el selector
+            example: Asma
+          anteced_salud_inp:
+            type: string
+            description: Antecedente(s) de salud del usuario indicado(s) en el campo adicional diseñado para informar sobre antecedentes que no estén en el selector o cuando el usuario tenga varios antecedentes
+            example: 
+          estado_user:
+            type: integer
+            description: Estado del usuario dentro del sistema (activo o inactivo)
+            example: 1
+    
+    ExitoUsuariosActualizacion:
+      type: string
+      description: Resultado del proceso de actualización de un usuario del sistema
+      example: Se actualizó correctamente el usuario
+
+    ExitoCorroboracionImg:
+      type: string
+      description: Resultado del proceso de corroboración de la existencia de una imagen duplicada en el sistema (con el mismo nombre de una que se está agregando)
+      example: No hay registros
+
+    ExitoAnunciosSubirImg:
+      type: string
+      description: Resultado del proceso de subida de la imagen al servidor
+      example: No hay archivos
+    
+    ExitoGetAnuncios:
+      type: array
+      items:
+        type: object
+        properties:
+          id_anunc:
+            type: integer
+            description: Identificador único del anuncio
+            example: 1
+          fk_id_admin_anunc:
+            type: integer
+            description: Identificación del administrador que creó el anuncio
+            example: 1
+          titulo_anunc:
+            type: string
+            description: Título del anuncio
+            example: Ten en cuenta
+          desc_anunc:
+            type: string
+            description: Descripción del anuncio
+            example: Por situaciones adversas, el gimnasio no estará disponible en las mañanas hasta nuevo aviso. Pedimos excusas por esta situación. Gracias.
+          img_anunc:
+            type: string
+            description: Nombre de la imagen guardada en el servidor que corresponde a la imagen del anuncio
+            example: cinco.jpg
+          estado_anunc:
+            type: integer
+            description: Estado del anuncio dentro del sistema (si fue eliminado)
+            example: 1
+
+    ExitoAnunciosAgregar:
+      type: string
+      description: Resultado del proceso de creación de un nuevo anuncio en el sistema
+      example: Se agregó correctamente el anuncio
+    
+    ExitoAnunciosActualizacion:
+      type: string
+      description: Resultado del proceso de actualización de un anuncio del sistema
+      example: Se actualizó correctamente el anuncio
+
+    ExitoAnunciosEliminacion:
+      type: string
+      description: Resultado del proceso de Eliminación de un anuncio del sistema
+      example: Se eliminó correctamente el anuncio
+    
+    ExitoGetMusculos:
+      type: array
+      items:
+        type: object
+        properties:
+          musculo:
+            type: string
+            description: Nombre del músculo
+            example: Biceps
+
+    ExitoPlanificadorAgregar:
+      type: string
+      description: Resultado del proceso de creación de un registro en el planificador de rutinas del sistema
+      example: Se agregó correctamente
+
+    ExitoGetEjercicios:
+      type: array
+      items:
+        type: object
+        properties:
+          pkfk_musculo:
+            type: string
+            description: Nombre del músculo elegido
+            example: Cuadriceps
+          pkfk_ejercicio:
+            type: string
+            description: Nombre del ejercicio
+            example: Leg-press
+          imagen_ejerc:
+            type: string
+            description: Nombre de la imagen correspondiente al ejercicio anteriormente propuesto
+            example: ej01.png
+
+    ExitoGetAsistencias:
+      type: array
+      items:
+        type: object
+        properties:
+          id_registro_asis:
+            type: integer
+            description: Identificador del registro de asistencia
+            example: 1
+          id_instruc_asis:
+            type: integer
+            description: Identificación del instructor que registró la asistencia
+            example: 3
+          fk_id_aprend_asis:
+            type: integer
+            description: Identificación del aprendiz al que se le tomó la asistencia
+            example: 1028763822
+          nom1_user:
+            type: string
+            description: Primer nombre del usuario
+            example: Jhon
+          ape1_user:
+            type: string
+            description: Primer apellido del usuario
+            example: Cubidez
+          ape2_user:
+            type: string
+            description: Segundo apellido del usuario
+            example: Buitrago
+          correo_sena_user:
+            type: string
+            description: Correo de dominio SENA del usuario
+            example: jcub@soy.sena.edu.co
+          fk_anteced_salud_sel:
+            type: string
+            description: Antecedente de salud del usuario indicado en el selector
+            example: Asma
+          anteced_salud_inp:
+            type: string
+            description: Antecedente(s) de salud del usuario indicado(s) en el campo adicional diseñado para informar sobre antecedentes que no estén en el selector o cuando el usuario tenga varios antecedentes
+            example: 
+          fecha_asis:
+            type: string
+            description: Fecha en la que se tomó el registro de asistencia
+            example: 2023-11-12T05:00:00.000Z
+    
+    ExitoGetAsistencia:
+      type: array
+      items:
+        type: object
+        properties:
+          id_registro_asis:
+            type: integer
+            description: Identificador del registro de asistencia
+            example: 1
+          id_instruc_asis:
+            type: integer
+            description: Identificación del instructor que registró la asistencia
+            example: 3
+          fk_id_aprend_asis:
+            type: integer
+            description: Identificación del aprendiz al que se le tomó la asistencia
+            example: 1028763822
+          fecha_asis:
+            type: string
+            description: Fecha en la que se tomó el registro de asistencia
+            example: 2023-11-12T05:00:00.000Z
+          estado_asis:
+            type: integer
+            description: Estado del registro de asistencia dentro del sistema (si fue eliminado)
+            example: 1
+    
+    ExitoAsistenciaCorroboracionAprendiz:
+      type: string
+      description: Resultado del proceso de corroboración del rol de aprendiz del usuario del que se obtuvo la identificación en el registro de asistencias
+      example: Si existe
+    
+    ExitoAsistenciaAgregar:
+      type: string
+      description: Resultado del proceso de creación de un registro de asistencia dentro del sistema
+      example: Se agregó correctamente el registro
+    
+    ExitoAsistenciaActualizacion:
+      type: string
+      description: Resultado del proceso de edición de un registro de asistencia dentro del sistema
+      example: Se actualizó correctamente el registro de asistencia
+    
+    ExitoAsistenciaEliminacion:
+      type: string
+      description: Resultado del proceso de eliminación de un registro de asistencia dentro del sistema
+      example: Se eliminó correctamente el registro de asistencia
+

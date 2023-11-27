@@ -13,6 +13,32 @@ const path = require('path')
 // npm install crypto
 const crypto = require('crypto')
 
+// npm i swagger-jsdoc swagger-ui-express
+const swaggerUI = require('swagger-ui-express');
+// const swaggerJsDoc = require('swagger-jsdoc');
+const yaml = require('yamljs');
+const swaggerDocument = yaml.load('./gsa_apidoc.yaml');
+
+// const swaggerSpec = {
+//     definition: {
+//         openapi: '3.0.3',
+//         info: {
+//             title: 'API GymSenApp',
+//             description: 'La API del proyecto GymSenApp integra un conjunto de elementos que crean el entorno propicio para el correcto funcionamiento de este elemento clave para el despliegue de la aplicación.\n\nPara complementar el desarrollo de la API fue creada la presente documentación con Swagger, sirviendo de corroboración del correcto funcionamiento de la API y de los elementos que la componen.\n\n_Dicho esto, pasemos a la documentación_',
+//             version: '1.0.0',
+//         },
+//         servers: [
+//             {
+//                 url: 'http://localhost:9300/'
+//             },
+//         ],
+//     },
+//     apis: ['./index.js'],
+// };
+
+
+
+
 const app = express()
 
 app.use(function(req, res, next) {
@@ -26,6 +52,11 @@ app.use(function(req, res, next) {
 app.use(cors({origin:"*"}));
 app.use(bodyParser.json());
 app.use(morgan('dev'));
+app.use(
+    '/api-docs',
+    swaggerUI.serve,
+    swaggerUI.setup(swaggerDocument)
+);
 
 // encrypt
 const algorithm = "aes-256-cbc";
