@@ -9,7 +9,7 @@ info:
     _Dicho esto, pasemos a la documentación_
   version: 1.0.0
 servers:
-  - url: http://localhost:9300/
+  - url: https://gsa-api.onrender.com/
 tags:
   - name: Tipos de usuarios
     description: Este endpoint maneja lo relacionado a la obtención de los roles o tipos de usuarios que el sistema maneja.
