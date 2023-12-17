@@ -176,16 +176,16 @@ insert into musculos values
 ("Espalda");
 
 insert into ejercicios values
-("Leg-press","ej01.png"),
-("Extension de pierna", "ej02.png"),
-("Copa triceps","ej03.png"),
-("Rompecraneos","ej04.png"),
-("Curl con mancuernas","ej05.png"),
-("Dominadas","ej06.png"),
-("Puente isometrico","ej07.png"),
-("Curl nordico","ej08.png"),
-("Jalon al pecho","ej09.png"),
-("Remo brazo","ej10.png");
+("Leg-press","ej01.gif"),
+("Extension de pierna", "ej02.gif"),
+("Copa triceps","ej03.gif"),
+("Rompecraneos","ej04.gif"),
+("Curl con mancuernas","ej05.gif"),
+("Dominadas","ej06.gif"),
+("Puente isometrico","ej07.gif"),
+("Curl nordico","ej08.gif"),
+("Jalon al pecho","ej09.gif"),
+("Remo brazo","ej10.gif");
 
 insert into musculos_ejercicios values
 ("Cuadriceps","Leg-press"),
