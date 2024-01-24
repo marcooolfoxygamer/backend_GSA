@@ -165,8 +165,8 @@ insert into usuarios values
 
 insert into anuncios values
 (NULL, 1, "Ten en cuenta", "Por situaciones adversas, el gimnasio no estará disponible en las mañanas hasta nuevo aviso. Pedimos excusas por esta situación. Gracias.", "cinco.jpg",1),
-(NULL, 1, "Recuerda...", "Estamos disponibles de 6am a 8pm (sugeto a cambios).", "principal.jpg",1),
-(NULL, 1, "Si", "Estamos disponibles de 6am a 8pm (sugeto a cambios).", "cuatro.jpg",1);
+(NULL, 1, "Recuerda...", "Estamos disponibles de 6am a 8pm (sujeto a cambios).", "principal.jpg",1),
+(NULL, 1, "Si", "Estamos disponibles de 6am a 8pm (sujeto a cambios).", "cuatro.jpg",1);
 
 insert into musculos values
 ("Cuadriceps"),
