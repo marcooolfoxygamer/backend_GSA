@@ -19,6 +19,8 @@ const swaggerUI = require('swagger-ui-express');
 const yaml = require('yamljs');
 const swaggerDocument = yaml.load('./gsa_apidoc.yaml');
 
+const PDF = require('pdfkit-construct');
+
 // const swaggerSpec = {
 //     definition: {
 //         openapi: '3.0.3',
@@ -45,6 +47,7 @@ app.use(function(req, res, next) {
     res.setHeader('Access-Control-Allow-Origin', '*');
     res.setHeader('Access-Control-Allow-Methods', '*');
     res.setHeader("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+    res.setHeader("Access-Control-Expose-Headers", "Content-Disposition");
     next()
 })
 
@@ -431,6 +434,21 @@ app.delete('/anuncios_eliminacion/:id_anunc', (req, res) => {
 
     // Usuarios
 
+
+app.get('/validacion_existencia_usuarios', (req, res) => {
+    const query = `SELECT * FROM usuarios`
+    conexion.query(query, (error, resultado) => {
+        if(error) return console.error(error.message)
+
+        if(resultado.length > 0) {
+            res.json(`Si hay registros`)
+        } else {
+            res.json(`No hay registros`)
+        }
+    })
+})
+
+
 app.get('/usuarios_listado', (req, res) => {
     const query = `SELECT id_user, tipo_user, nom1_user, ape1_user, ape2_user, correo_sena_user, fk_anteced_salud_sel, anteced_salud_inp, estado_user
     FROM usuarios
@@ -443,6 +461,22 @@ app.get('/usuarios_listado', (req, res) => {
             res.json(resultado)
         } else {
             res.json(`No hay registros`)
+        }
+    })
+})
+
+
+app.get('/validacion_existencia_usuarios/:id_user', (req, res) => {
+    const { id_user } = req.params
+
+    const query = `SELECT * FROM usuarios WHERE id_user=${id_user}`
+    conexion.query(query, (error, resultado) => {
+        if(error) return console.error(error.message)
+
+        if(resultado.length > 0) {
+            res.json(`Si existe`)
+        } else {
+            res.json(`No existe`)
         }
     })
 })
@@ -492,6 +526,258 @@ app.put('/usuarios_edicion/:id_user', (req, res) => {
     })
 })
 
+app.get('/usuarios_reporte', (req, res) => {
+    const query = `SELECT id_user, tipo_user, nom1_user, ape1_user, ape2_user, correo_sena_user, fk_anteced_salud_sel, anteced_salud_inp, estado_user
+    FROM usuarios
+    INNER JOIN tipos_usuarios
+    ON fk_tipo_user=cod_tipo_user`
+    conexion.query(query, (error, resultado) => {
+        if(error) return console.error(error.message)
+
+        if(resultado.length > 0) {
+
+            const doc = new PDF({size: 'A3', bufferPages: true});
+
+            const filenamepdf = `ReporteUsuarios${Date.now()}.pdf`;
+            
+            const stream = res.writeHead(200, {
+                'Content-Type': 'application/pdf',
+                'Content-disposition': `attachment; filename=${filenamepdf}`
+            });
+
+            doc.on('data', (data) => {stream.write(data)});
+            doc.on('end', () => {stream.end()});
+
+            doc.setDocumentHeader({
+                height: '18%'
+            }, () => {
+                doc.fontSize(17).text('Reporte de usuarios', {
+                    // width: '100%',
+                    align: 'center',
+                    // height: 100,
+                    lineGap: 17,
+                    // indent: 17,
+                    paragraphGap: 17,
+                    
+                })
+
+                doc.fontSize(12);
+
+                let fechaCompletaAct = new Date();
+                let horaCompletaAct = fechaCompletaAct.toLocaleTimeString();
+                let indexLastColon = horaCompletaAct.lastIndexOf(':');
+                let ultimaParteHora = horaCompletaAct.slice(indexLastColon+1,)
+                let ultimaParteHoraFinal = ultimaParteHora.replace(/^.\S/, '');
+                let horaFinal = horaCompletaAct.slice(0,indexLastColon)+ultimaParteHoraFinal
+
+                
+                // doc.text(`Fecha: ${new Date().toISOString().replace(/T/, ' ').replace(/\..+/, '')}, Fecha: ${new Date().toISOString().replace(/\T.+/, '')}, Hora: ${new Date(UTC).toISOString().replace(/^.+T/, '').replace(/\..+/, '')}`, {
+                // doc.text(`Fecha: ${fechaAct.toISOString().replace(/T/, ' ').replace(/\..+/, '')}, Fecha: ${fechaAct.toISOString().replace(/\T.+/, '')}, Hora: ${fechaAct.toLocaleTimeString()}`, {
+                doc.text(`Fecha: ${fechaCompletaAct.toISOString().replace(/\T.+/, '')}      Hora: ${horaFinal}`, {
+                    width: 420,
+                    align: 'left',
+                    height: 150,
+                })
+            });
+
+            
+            let cont = 1;
+
+            let datosRegistros = resultado.map((usuario) => {
+                const registro = {
+                    id_user: usuario.id_user,
+                    tipo_user: usuario.tipo_user,
+                    nom1_user: usuario.nom1_user,
+                    ape1_user: usuario.ape1_user,
+                    ape2_user: usuario.ape2_user,
+                    correo_sena_user: usuario.correo_sena_user,
+                    fk_anteced_salud_sel: usuario.fk_anteced_salud_sel,
+                    anteced_salud_inp: usuario.anteced_salud_inp,
+                    estado_user: (usuario.estado_user == 1) ? 'Activo' : 'Inactivo',
+                }
+                cont++;
+                return registro;
+            });
+
+            doc.addTable([
+                {key: 'id_user', label: 'Identificación', align: 'left'},
+                {key: 'tipo_user', label: 'Tipo de usuario', align: 'left'},
+                {key: 'nom1_user', label: 'P.nombre aprendiz', align: 'left'},
+                {key: 'ape1_user', label: 'P.apellido aprendiz', align: 'left'},
+                {key: 'ape2_user', label: 'S.apellido aprendiz', align: 'left'},
+                {key: 'correo_sena_user', label: 'Correo aprendiz', align: 'left'},
+                {key: 'fk_anteced_salud_sel', label: 'Antecedentes #1', align: 'left'},
+                {key: 'anteced_salud_inp', label: 'Antecedentes #2', align: 'left'},
+                {key: 'estado_user', label: 'Estado del usuario', align: 'left'},
+            ], datosRegistros, {
+                border: null,
+                // width: "fill_body",
+                width: "fill_body",
+                striped: true,
+                stripedColors: ["#f6f6f6", "#e3e3e3"],
+                marginLeft: 40,
+                marginRight: 40,
+                // border: {size: 0.1, color: '#b4b4b4'},
+                headFontSize: 6.5,
+                headAlign: 'center',
+                cellsFontSize: 7,
+                cellsMaxWidth : 260,
+                cellsPadding: 8,
+            })
+
+            doc.render();
+
+
+            doc.end();
+
+
+            // res.json('ok')
+
+        } else {
+
+            // res.json(`No hay registros`)
+
+        }
+    })
+})
+
+
+app.get('/usuarios_reporte/:id_user', (req, res) => {
+    const { id_user } = req.params
+
+    const query = `SELECT id_user, tipo_user, nom1_user, ape1_user, ape2_user, correo_sena_user, fk_anteced_salud_sel, anteced_salud_inp, estado_user
+    FROM usuarios
+    INNER JOIN tipos_usuarios
+    ON fk_tipo_user=cod_tipo_user
+    WHERE id_user=${id_user}`
+    conexion.query(query, (error, resultado) => {
+        if(error) return console.error(error.message)
+
+        if(resultado.length > 0) {
+
+            const doc = new PDF({size: 'A3', bufferPages: true});
+
+            const filenamepdf = `ReporteUsuario_identificacion_${id_user}.pdf`;
+            
+            const stream = res.writeHead(200, {
+                'Content-Type': 'application/pdf',
+                'Content-disposition': `attachment; filename=${filenamepdf}`
+            });
+
+            doc.on('data', (data) => {stream.write(data)});
+            doc.on('end', () => {stream.end()});
+
+            doc.setDocumentHeader({
+                height: '18%'
+            }, () => {
+                doc.fontSize(17).text('Reporte de usuario', {
+                    // width: '100%',
+                    align: 'center',
+                    // height: 100,
+                    lineGap: 17,
+                    // indent: 17,
+                    paragraphGap: 17,
+                    
+                })
+
+                doc.fontSize(12);
+
+                let fechaCompletaAct = new Date();
+                let horaCompletaAct = fechaCompletaAct.toLocaleTimeString();
+                let indexLastColon = horaCompletaAct.lastIndexOf(':');
+                let ultimaParteHora = horaCompletaAct.slice(indexLastColon+1,)
+                let ultimaParteHoraFinal = ultimaParteHora.replace(/^.\S/, '');
+                let horaFinal = horaCompletaAct.slice(0,indexLastColon)+ultimaParteHoraFinal
+
+                
+                // doc.text(`Fecha: ${new Date().toISOString().replace(/T/, ' ').replace(/\..+/, '')}, Fecha: ${new Date().toISOString().replace(/\T.+/, '')}, Hora: ${new Date(UTC).toISOString().replace(/^.+T/, '').replace(/\..+/, '')}`, {
+                // doc.text(`Fecha: ${fechaAct.toISOString().replace(/T/, ' ').replace(/\..+/, '')}, Fecha: ${fechaAct.toISOString().replace(/\T.+/, '')}, Hora: ${fechaAct.toLocaleTimeString()}`, {
+                doc.text(`Fecha: ${fechaCompletaAct.toISOString().replace(/\T.+/, '')}      Hora: ${horaFinal}`, {
+                    width: 420,
+                    align: 'left',
+                    height: 150,
+                    lineGap: 7,
+                    // indent: 5,
+                    paragraphGap: 7,
+                })
+                doc.text(`Usuario: ${resultado[0].ape1_user} ${resultado[0].ape2_user} ${resultado[0].nom1_user}`, {
+                    width: 420,
+                    align: 'left',
+                    height: 150,
+                    lineGap: 7,
+                    // indent: 5,
+                    paragraphGap: 7,
+                })
+                doc.text(`Identificación: ${resultado[0].id_user}`, {
+                    width: 420,
+                    align: 'left',
+                    height: 150,
+                })
+
+            });
+
+            
+            let cont = 1;
+
+            let datosRegistros = resultado.map((usuario) => {
+                const registro = {
+                    id_user: usuario.id_user,
+                    tipo_user: usuario.tipo_user,
+                    nom1_user: usuario.nom1_user,
+                    ape1_user: usuario.ape1_user,
+                    ape2_user: usuario.ape2_user,
+                    correo_sena_user: usuario.correo_sena_user,
+                    fk_anteced_salud_sel: usuario.fk_anteced_salud_sel,
+                    anteced_salud_inp: usuario.anteced_salud_inp,
+                    estado_user: (usuario.estado_user == 1) ? 'Activo' : 'Inactivo',
+                }
+                cont++;
+                return registro;
+            });
+
+            doc.addTable([
+                {key: 'id_user', label: 'Identificación', align: 'left'},
+                {key: 'tipo_user', label: 'Tipo de usuario', align: 'left'},
+                {key: 'nom1_user', label: 'P.nombre aprendiz', align: 'left'},
+                {key: 'ape1_user', label: 'P.apellido aprendiz', align: 'left'},
+                {key: 'ape2_user', label: 'S.apellido aprendiz', align: 'left'},
+                {key: 'correo_sena_user', label: 'Correo aprendiz', align: 'left'},
+                {key: 'fk_anteced_salud_sel', label: 'Antecedentes #1', align: 'left'},
+                {key: 'anteced_salud_inp', label: 'Antecedentes #2', align: 'left'},
+                {key: 'estado_user', label: 'Estado del usuario', align: 'left'},
+            ], datosRegistros, {
+                border: null,
+                // width: "fill_body",
+                width: "fill_body",
+                striped: true,
+                stripedColors: ["#f6f6f6", "#e3e3e3"],
+                marginLeft: 40,
+                marginRight: 40,
+                // border: {size: 0.1, color: '#b4b4b4'},
+                headFontSize: 6.5,
+                headAlign: 'center',
+                cellsFontSize: 7,
+                cellsMaxWidth : 260,
+                cellsPadding: 8,
+            })
+
+            doc.render();
+
+
+            doc.end();
+
+
+            // res.json('ok')
+
+        } else {
+
+            // res.json(`No hay registros`)
+
+        }
+    })
+})
+
+
 
 // Aprendiz
 
@@ -502,6 +788,36 @@ app.get('/musculos', (req, res) => {
 
         if(resultado.length > 0) {
             res.json(resultado)
+        } else {
+            res.json(`No hay registros`)
+        }
+    })
+})
+
+
+app.get('/validacion_existencia_registros_planificador', (req, res) => {
+    const query = `SELECT * FROM planificador`
+    conexion.query(query, (error, resultado) => {
+        if(error) return console.error(error.message)
+
+        if(resultado.length > 0) {
+            res.json(`Si hay registros`)
+        } else {
+            res.json(`No hay registros`)
+        }
+    })
+})
+
+
+app.get('/validacion_existencia_registros_planificador/:id_user', (req, res) => {
+    const { id_user } = req.params
+
+    const query = `SELECT * FROM usuarios INNER JOIN planificador ON fk_id_aprend=id_user WHERE id_user=${id_user} AND estado_user=1`
+    conexion.query(query, (error, resultado) => {
+        if(error) return console.error(error.message)
+
+        if(resultado.length > 0) {
+            res.json(`Si hay registros`)
         } else {
             res.json(`No hay registros`)
         }
@@ -542,7 +858,303 @@ app.get('/ejercicios_musculo/:musculo', (req, res) => {
 })
 
 
+app.get('/planificador_aprendices_reporte', (req, res) => {
+    const query = `SELECT id_reg_planif, id_user, nom1_user, ape1_user, ape2_user, correo_sena_user, fk_musculo
+    FROM usuarios
+    INNER JOIN planificador
+    ON fk_id_aprend=id_user`
+    conexion.query(query, (error, resultado) => {
+        if(error) return console.error(error.message)
+
+        if(resultado.length > 0) {
+
+            const doc = new PDF({size: 'A3', bufferPages: true});
+
+            const filenamepdf = `ReporteRutinasAprendices${Date.now()}.pdf`;
+            
+            const stream = res.writeHead(200, {
+                'Content-Type': 'application/pdf',
+                'Content-disposition': `attachment; filename=${filenamepdf}`
+            });
+
+            doc.on('data', (data) => {stream.write(data)});
+            doc.on('end', () => {stream.end()});
+
+            // doc.pipe(res);
+            
+            // doc.text('hola mundo con pdfkit', 30, 30);
+
+            // doc.text(resultado[1]['fecha_asis']);
+
+            // doc.pipe(fs.createWriteStream('asistencias.pdf'));
+
+            doc.setDocumentHeader({
+                height: '18%'
+            }, () => {
+                // doc.lineJoin('miter')
+                //     .rect(0, 0, doc.page.width, doc.header.options.heightNumber).fill("#ededed");
+
+                // doc.fill("#115dc8")
+                //     .fontSize(20)
+                //     .text("Hello world header", doc.header.x, doc.header.y);
+                doc.fontSize(17).text('Reporte rutinas de aprendices', {
+                    // width: '100%',
+                    align: 'center',
+                    // height: 100,
+                    lineGap: 17,
+                    // indent: 17,
+                    paragraphGap: 17,
+                    
+                })
+
+                doc.fontSize(12);
+
+                let fechaCompletaAct = new Date();
+                let horaCompletaAct = fechaCompletaAct.toLocaleTimeString();
+                let indexLastColon = horaCompletaAct.lastIndexOf(':');
+                let ultimaParteHora = horaCompletaAct.slice(indexLastColon+1,)
+                let ultimaParteHoraFinal = ultimaParteHora.replace(/^.\S/, '');
+                let horaFinal = horaCompletaAct.slice(0,indexLastColon)+ultimaParteHoraFinal
+
+                
+                // doc.text(`Fecha: ${new Date().toISOString().replace(/T/, ' ').replace(/\..+/, '')}, Fecha: ${new Date().toISOString().replace(/\T.+/, '')}, Hora: ${new Date(UTC).toISOString().replace(/^.+T/, '').replace(/\..+/, '')}`, {
+                // doc.text(`Fecha: ${fechaAct.toISOString().replace(/T/, ' ').replace(/\..+/, '')}, Fecha: ${fechaAct.toISOString().replace(/\T.+/, '')}, Hora: ${fechaAct.toLocaleTimeString()}`, {
+                doc.text(`Fecha: ${fechaCompletaAct.toISOString().replace(/\T.+/, '')}      Hora: ${horaFinal}`, {
+                    width: 420,
+                    align: 'left',
+                    height: 150,
+                })
+            });
+
+
+            let cont = 1;
+
+            let datosRegistros = resultado.map((aprendizRutina) => {
+                const registro = {
+                    id_reg_planif: aprendizRutina.id_reg_planif,
+                    id_user: aprendizRutina.id_user,
+                    nom1_user: aprendizRutina.nom1_user,
+                    ape1_user: aprendizRutina.ape1_user,
+                    ape2_user: aprendizRutina.ape2_user,
+                    correo_sena_user: aprendizRutina.correo_sena_user,
+                    fk_musculo: aprendizRutina.fk_musculo,
+                }
+                cont++;
+                return registro;
+            });
+
+            doc.addTable([
+                {key: 'id_reg_planif', label: 'Identificador registro', align: 'left'},
+                {key: 'id_user', label: 'Identificación aprendiz', align: 'left'},
+                {key: 'nom1_user', label: 'P.nombre aprendiz', align: 'left'},
+                {key: 'ape1_user', label: 'P.apellido aprendiz', align: 'left'},
+                {key: 'ape2_user', label: 'S.apellido aprendiz', align: 'left'},
+                {key: 'correo_sena_user', label: 'Correo aprendiz', align: 'left'},
+                {key: 'fk_musculo', label: 'Músculo elegido', align: 'left'},
+            ], datosRegistros, {
+                border: null,
+                // width: "fill_body",
+                width: "fill_body",
+                striped: true,
+                stripedColors: ["#f6f6f6", "#e3e3e3"],
+                marginLeft: 45,
+                marginRight: 45,
+                // border: {size: 0.1, color: '#b4b4b4'},
+                headFontSize: 8,
+                headAlign: 'center',
+                cellsFontSize: 8,
+                cellsMaxWidth : 260,
+                cellsPadding: 8,
+            })
+
+            doc.render();
+
+
+            doc.end();
+
+
+            // res.json('ok')
+
+        } else {
+
+            // res.json(`No hay registros`)
+
+        }
+    })
+})
+
+
+app.get('/planificador_aprendices_reporte/:id_user', (req, res) => {
+    const { id_user } = req.params
+
+    const query = `SELECT id_reg_planif, id_user, nom1_user, ape1_user, ape2_user, correo_sena_user, fk_musculo
+    FROM usuarios
+    INNER JOIN planificador
+    ON fk_id_aprend=id_user
+    WHERE id_user=${id_user}`
+    conexion.query(query, (error, resultado) => {
+        if(error) return console.error(error.message)
+
+        if(resultado.length > 0) {
+
+            const doc = new PDF({size: 'A3', bufferPages: true});
+
+            const filenamepdf = `ReporteRutinaAprendiz_identificacion_${id_user}.pdf`;
+            
+            const stream = res.writeHead(200, {
+                'Content-Type': 'application/pdf',
+                'Content-disposition': `attachment; filename=${filenamepdf}`
+            });
+
+            doc.on('data', (data) => {stream.write(data)});
+            doc.on('end', () => {stream.end()});
+
+            // doc.pipe(res);
+            
+            // doc.text('hola mundo con pdfkit', 30, 30);
+
+            // doc.text(resultado[1]['fecha_asis']);
+
+            // doc.pipe(fs.createWriteStream('asistencias.pdf'));
+
+            doc.setDocumentHeader({
+                height: '22%'
+            }, () => {
+                // doc.lineJoin('miter')
+                //     .rect(0, 0, doc.page.width, doc.header.options.heightNumber).fill("#ededed");
+
+                // doc.fill("#115dc8")
+                //     .fontSize(20)
+                //     .text("Hello world header", doc.header.x, doc.header.y);
+                doc.fontSize(17).text('Reporte rutina de aprendiz', {
+                    // width: '100%',
+                    align: 'center',
+                    // height: 100,
+                    lineGap: 17,
+                    // indent: 17,
+                    paragraphGap: 17,
+                    
+                })
+
+                doc.fontSize(12);
+
+                let fechaCompletaAct = new Date();
+                let horaCompletaAct = fechaCompletaAct.toLocaleTimeString();
+                let indexLastColon = horaCompletaAct.lastIndexOf(':');
+                let ultimaParteHora = horaCompletaAct.slice(indexLastColon+1,)
+                let ultimaParteHoraFinal = ultimaParteHora.replace(/^.\S/, '');
+                let horaFinal = horaCompletaAct.slice(0,indexLastColon)+ultimaParteHoraFinal
+
+                
+                // doc.text(`Fecha: ${new Date().toISOString().replace(/T/, ' ').replace(/\..+/, '')}, Fecha: ${new Date().toISOString().replace(/\T.+/, '')}, Hora: ${new Date(UTC).toISOString().replace(/^.+T/, '').replace(/\..+/, '')}`, {
+                // doc.text(`Fecha: ${fechaAct.toISOString().replace(/T/, ' ').replace(/\..+/, '')}, Fecha: ${fechaAct.toISOString().replace(/\T.+/, '')}, Hora: ${fechaAct.toLocaleTimeString()}`, {
+                doc.text(`Fecha: ${fechaCompletaAct.toISOString().replace(/\T.+/, '')}      Hora: ${horaFinal}`, {
+                    width: 420,
+                    align: 'left',
+                    height: 150,
+                    lineGap: 7,
+                    // indent: 5,
+                    paragraphGap: 7,
+                })
+                doc.text(`Aprendiz: ${resultado[0].ape1_user} ${resultado[0].ape2_user} ${resultado[0].nom1_user}`, {
+                    width: 420,
+                    align: 'left',
+                    height: 150,
+                    lineGap: 7,
+                    // indent: 5,
+                    paragraphGap: 7,
+                })
+                doc.text(`Identificación: ${resultado[0].id_user}`, {
+                    width: 420,
+                    align: 'left',
+                    height: 150,
+                    lineGap: 7,
+                    // indent: 5,
+                    paragraphGap: 7,
+                })
+                doc.text(`Correo electrónico: ${resultado[0].correo_sena_user}`, {
+                    width: 420,
+                    align: 'left',
+                    height: 150,
+                })
+            });
+
+
+            let cont = 1;
+
+            let datosRegistros = resultado.map((aprendizRutina) => {
+                const registro = {
+                    id_reg_planif: aprendizRutina.id_reg_planif,
+                    // id_user: aprendizRutina.id_user,
+                    nom1_user: aprendizRutina.nom1_user,
+                    ape1_user: aprendizRutina.ape1_user,
+                    ape2_user: aprendizRutina.ape2_user,
+                    // correo_sena_user: aprendizRutina.correo_sena_user,
+                    fk_musculo: aprendizRutina.fk_musculo,
+                }
+                cont++;
+                return registro;
+            });
+
+            doc.addTable([
+                {key: 'id_reg_planif', label: 'Identificador registro', align: 'left'},
+                // {key: 'id_user', label: 'Identificación aprendiz', align: 'left'},
+                {key: 'nom1_user', label: 'P.nombre aprendiz', align: 'left'},
+                {key: 'ape1_user', label: 'P.apellido aprendiz', align: 'left'},
+                {key: 'ape2_user', label: 'S.apellido aprendiz', align: 'left'},
+                // {key: 'correo_sena_user', label: 'Correo aprendiz', align: 'left'},
+                {key: 'fk_musculo', label: 'Músculo elegido', align: 'left'},
+            ], datosRegistros, {
+                border: null,
+                // width: "fill_body",
+                width: "fill_body",
+                // marginTop : 900,
+                striped: true,
+                stripedColors: ["#f6f6f6", "#e3e3e3"],
+                marginLeft: 55,
+                marginRight: 55,
+                // border: {size: 0.1, color: '#b4b4b4'},
+                headFontSize: 9,
+                headAlign: 'left',
+                cellsFontSize: 9,
+                cellsMaxWidth : 260,
+                cellsPadding: 8,
+            })
+
+            doc.render();
+
+            doc.setPageNumbers((p, c) => `Page ${p} of ${c}`, "bottom right");
+            doc.end();
+
+
+            // res.json('ok')
+
+        } else {
+
+            // res.json(`No hay registros`)
+
+        }
+    })
+})
+
+
 // Instructor
+
+
+
+app.get('/validacion_existencia_asistencias', (req, res) => {
+    const query = `SELECT * FROM asistencia WHERE estado_asis=1`
+    conexion.query(query, (error, resultado) => {
+        if(error) return console.error(error.message)
+
+        if(resultado.length > 0) {
+            res.json(`Si hay registros`)
+        } else {
+            res.json(`No hay registros`)
+        }
+    })
+})
+
 
 app.get('/asistencia_listado', (req, res) => {
     const query = `SELECT id_registro_asis, id_instruc_asis, fk_id_aprend_asis, nom1_user, ape1_user, ape2_user, correo_sena_user, fk_anteced_salud_sel, anteced_salud_inp, fecha_asis 
@@ -566,7 +1178,7 @@ app.get('/asistencia_listado', (req, res) => {
 app.get('/asistencia_listado/:id_registro_asis', (req, res) => {
     const { id_registro_asis } = req.params
 
-    const query = `SELECT * FROM asistencia WHERE id_registro_asis=${id_registro_asis}`
+    const query = `SELECT * FROM asistencia WHERE id_registro_asis=${id_registro_asis} AND estado_asis=1`
     conexion.query(query, (error, resultado) => {
         if(error) return console.error(error.message)
 
@@ -579,10 +1191,8 @@ app.get('/asistencia_listado/:id_registro_asis', (req, res) => {
 })
 
 
-app.post('/asistencia_listado_aprend', (req, res) => {
-    let {
-        fk_id_aprend_asis
-    } = req.body
+app.get('/asistencia_listado_aprend/:fk_id_aprend_asis', (req, res) => {
+    const { fk_id_aprend_asis } = req.params
 
     const query = `SELECT * FROM usuarios WHERE id_user=${fk_id_aprend_asis} AND fk_tipo_user=2 AND estado_user=1`
     conexion.query(query, (error, resultado) => {
@@ -592,6 +1202,40 @@ app.post('/asistencia_listado_aprend', (req, res) => {
             res.json('Si existe')
         } else {
             res.json(`No existe`)
+        }
+    })
+})
+
+
+app.get('/validacion_existencia_asistencias_id/:fk_id_aprend_asis', (req, res) => {
+    const { fk_id_aprend_asis } = req.params
+
+    const query = `SELECT * FROM asistencia WHERE fk_id_aprend_asis=${fk_id_aprend_asis} AND estado_asis=1`
+    conexion.query(query, (error, resultado) => {
+        if(error) return console.error(error.message)
+
+        if(resultado.length > 0) {
+            res.json('Si hay registros')
+        } else {
+            res.json(`No hay registros`)
+        }
+    })
+})
+
+
+app.get('/validacion_existencia_asistencias_fecha/:fecha_asis', (req, res) => {
+    const { fecha_asis } = req.params
+
+    console.log(fecha_asis)
+
+    const query = `SELECT * FROM asistencia WHERE fecha_asis='${fecha_asis}' AND estado_asis=1`
+    conexion.query(query, (error, resultado) => {
+        if(error) return console.error(error.message)
+
+        if(resultado.length > 0) {
+            res.json('Si hay registros')
+        } else {
+            res.json(`No hay registros`)
         }
     })
 })
@@ -639,4 +1283,442 @@ app.delete('/asistencia_eliminacion/:id_registro_asis', (req, res) => {
         res.json(`Se eliminó correctamente el registro de asistencia`)
     })
 })
+
+app.get('/asistencia_reporte', (req, res) => {
+    const query = `SELECT id_registro_asis, id_instruc_asis, fk_id_aprend_asis, nom1_user, ape1_user, ape2_user, correo_sena_user, fk_anteced_salud_sel, anteced_salud_inp, fecha_asis 
+    FROM asistencia
+    INNER JOIN usuarios
+    ON fk_id_aprend_asis=id_user
+    WHERE estado_asis = 1
+    ORDER BY fecha_asis DESC`
+    conexion.query(query, (error, resultado) => {
+        if(error) return console.error(error.message)
+
+        if(resultado.length > 0) {
+
+            const doc = new PDF({size: 'A3', bufferPages: true});
+
+            const filenamepdf = `ReporteAsistencias${Date.now()}.pdf`;
+            
+            const stream = res.writeHead(200, {
+                'Content-Type': 'application/pdf',
+                'Content-disposition': `attachment; filename=${filenamepdf}`
+            });
+
+            doc.on('data', (data) => {stream.write(data)});
+            doc.on('end', () => {stream.end()});
+
+            // doc.pipe(res);
+            
+            // doc.text('hola mundo con pdfkit', 30, 30);
+
+            // doc.text(resultado[1]['fecha_asis']);
+
+            // doc.pipe(fs.createWriteStream('asistencias.pdf'));
+
+            doc.setDocumentHeader({
+                height: '18%'
+            }, () => {
+                // doc.lineJoin('miter')
+                //     .rect(0, 0, doc.page.width, doc.header.options.heightNumber).fill("#ededed");
+
+                // doc.fill("#115dc8")
+                //     .fontSize(20)
+                //     .text("Hello world header", doc.header.x, doc.header.y);
+                doc.fontSize(17).text('Reporte registros de asistencia', {
+                    // width: '100%',
+                    align: 'center',
+                    // height: 100,
+                    lineGap: 17,
+                    // indent: 17,
+                    paragraphGap: 17,
+                    
+                })
+
+                doc.fontSize(12);
+
+                let fechaCompletaAct = new Date();
+                let horaCompletaAct = fechaCompletaAct.toLocaleTimeString();
+                let indexLastColon = horaCompletaAct.lastIndexOf(':');
+                let ultimaParteHora = horaCompletaAct.slice(indexLastColon+1,)
+                let ultimaParteHoraFinal = ultimaParteHora.replace(/^.\S/, '');
+                let horaFinal = horaCompletaAct.slice(0,indexLastColon)+ultimaParteHoraFinal
+
+                
+                // doc.text(`Fecha: ${new Date().toISOString().replace(/T/, ' ').replace(/\..+/, '')}, Fecha: ${new Date().toISOString().replace(/\T.+/, '')}, Hora: ${new Date(UTC).toISOString().replace(/^.+T/, '').replace(/\..+/, '')}`, {
+                // doc.text(`Fecha: ${fechaAct.toISOString().replace(/T/, ' ').replace(/\..+/, '')}, Fecha: ${fechaAct.toISOString().replace(/\T.+/, '')}, Hora: ${fechaAct.toLocaleTimeString()}`, {
+                doc.text(`Fecha: ${fechaCompletaAct.toISOString().replace(/\T.+/, '')}      Hora: ${horaFinal}`, {
+                    width: 420,
+                    align: 'left',
+                    height: 150,
+                })
+            });
+
+            
+            let cont = 1;
+
+            let datosRegistros = resultado.map((asistencia) => {
+                const registro = {
+                    id_registro_asis: asistencia.id_registro_asis,
+                    id_instruc_asis: asistencia.id_instruc_asis,
+                    fk_id_aprend_asis: asistencia.fk_id_aprend_asis,
+                    nom1_user: asistencia.nom1_user,
+                    ape1_user: asistencia.ape1_user,
+                    ape2_user: asistencia.ape2_user,
+                    correo_sena_user: asistencia.correo_sena_user,
+                    fk_anteced_salud_sel: asistencia.fk_anteced_salud_sel,
+                    anteced_salud_inp: asistencia.anteced_salud_inp,
+                    fecha_asis: (new Date(asistencia.fecha_asis)).toLocaleDateString()
+                }
+                cont++;
+                return registro;
+            });
+
+            doc.addTable([
+                {key: 'id_registro_asis', label: 'Identificador registro', align: 'left'},
+                {key: 'id_instruc_asis', label: 'Identificación instructor', align: 'left'},
+                {key: 'fk_id_aprend_asis', label: 'Identificación aprendiz', align: 'left'},
+                {key: 'nom1_user', label: 'P.nombre aprendiz', align: 'left'},
+                {key: 'ape1_user', label: 'P.apellido aprendiz', align: 'left'},
+                {key: 'ape2_user', label: 'S.apellido aprendiz', align: 'left'},
+                {key: 'correo_sena_user', label: 'Correo aprendiz', align: 'left'},
+                {key: 'fk_anteced_salud_sel', label: 'Antecedentes #1', align: 'left'},
+                {key: 'anteced_salud_inp', label: 'Antecedentes #2', align: 'left'},
+                {key: 'fecha_asis', label: 'Fecha asistencia', align: 'left'},
+            ], datosRegistros, {
+                border: null,
+                // width: "auto",
+                width: "fill_body",
+                striped: true,
+                stripedColors: ["#f6f6f6", "#e3e3e3"],
+                marginLeft: 35,
+                marginRight: 35,
+                // border: {size: 0.1, color: '#b4b4b4'},
+                headFontSize: 6,
+                headAlign: 'center',
+                cellsFontSize: 7,
+                cellsMaxWidth : 90,
+                cellsPadding: 8,
+            })
+
+            doc.render();
+
+
+            doc.end();
+
+
+            // res.json('ok')
+
+        } else {
+
+            // res.json(`No hay registros`)
+
+        }
+    })
+})
+
+app.get('/asistencia_reporte_id/:id_user', (req, res) => {
+    const { id_user } = req.params
+
+    const query = `SELECT id_registro_asis, id_instruc_asis, fk_id_aprend_asis, nom1_user, ape1_user, ape2_user, correo_sena_user, fk_anteced_salud_sel, anteced_salud_inp, fecha_asis 
+    FROM asistencia
+    INNER JOIN usuarios
+    ON fk_id_aprend_asis=id_user
+    WHERE estado_asis = 1 AND id_user=${id_user}
+    ORDER BY fecha_asis DESC`
+    conexion.query(query, (error, resultado) => {
+        if(error) return console.error(error.message)
+
+        if(resultado.length > 0) {
+
+            const doc = new PDF({size: 'A3', bufferPages: true});
+            const filenamepdf = `ReporteAsistenciaAprendiz_identificacion_${id_user}.pdf`;
+            
+            const stream = res.writeHead(200, {
+                'Content-Type': 'application/pdf',
+                'Content-disposition': `attachment; filename=${filenamepdf}`
+            });
+
+            doc.on('data', (data) => {stream.write(data)});
+            doc.on('end', () => {stream.end()});
+
+            // doc.pipe(res);
+            
+            // doc.text('hola mundo con pdfkit', 30, 30);
+
+            // doc.text(resultado[1]['fecha_asis']);
+
+            // doc.pipe(fs.createWriteStream('asistencias.pdf'));
+
+            doc.setDocumentHeader({
+                height: '22%'
+            }, () => {
+                // doc.lineJoin('miter')
+                //     .rect(0, 0, doc.page.width, doc.header.options.heightNumber).fill("#ededed");
+
+                // doc.fill("#115dc8")
+                //     .fontSize(20)
+                //     .text("Hello world header", doc.header.x, doc.header.y);
+                doc.fontSize(17).text('Reporte asistencia de aprendiz', {
+                    // width: '100%',
+                    align: 'center',
+                    // height: 100,
+                    lineGap: 17,
+                    // indent: 17,
+                    paragraphGap: 17,
+                    
+                })
+
+                doc.fontSize(12);
+
+                let fechaCompletaAct = new Date();
+                let horaCompletaAct = fechaCompletaAct.toLocaleTimeString();
+                let indexLastColon = horaCompletaAct.lastIndexOf(':');
+                let ultimaParteHora = horaCompletaAct.slice(indexLastColon+1,)
+                let ultimaParteHoraFinal = ultimaParteHora.replace(/^.\S/, '');
+                let horaFinal = horaCompletaAct.slice(0,indexLastColon)+ultimaParteHoraFinal
+
+                
+                // doc.text(`Fecha: ${new Date().toISOString().replace(/T/, ' ').replace(/\..+/, '')}, Fecha: ${new Date().toISOString().replace(/\T.+/, '')}, Hora: ${new Date(UTC).toISOString().replace(/^.+T/, '').replace(/\..+/, '')}`, {
+                // doc.text(`Fecha: ${fechaAct.toISOString().replace(/T/, ' ').replace(/\..+/, '')}, Fecha: ${fechaAct.toISOString().replace(/\T.+/, '')}, Hora: ${fechaAct.toLocaleTimeString()}`, {
+                doc.text(`Fecha: ${fechaCompletaAct.toISOString().replace(/\T.+/, '')}      Hora: ${horaFinal}`, {
+                    width: 420,
+                    align: 'left',
+                    height: 150,
+                    lineGap: 7,
+                    // indent: 5,
+                    paragraphGap: 7,
+                })
+                doc.text(`Aprendiz: ${resultado[0].ape1_user} ${resultado[0].ape2_user} ${resultado[0].nom1_user}`, {
+                    width: 420,
+                    align: 'left',
+                    height: 150,
+                    lineGap: 7,
+                    // indent: 5,
+                    paragraphGap: 7,
+                })
+                doc.text(`Identificación: ${resultado[0].fk_id_aprend_asis}`, {
+                    width: 420,
+                    align: 'left',
+                    height: 150,
+                    lineGap: 7,
+                    // indent: 5,
+                    paragraphGap: 7,
+                })
+                doc.text(`Correo electrónico: ${resultado[0].correo_sena_user}`, {
+                    width: 420,
+                    align: 'left',
+                    height: 150,
+                })
+            });
+
+            
+            let cont = 1;
+
+            let datosRegistros = resultado.map((asistencia) => {
+                const registro = {
+                    id_registro_asis: asistencia.id_registro_asis,
+                    id_instruc_asis: asistencia.id_instruc_asis,
+                    // fk_id_aprend_asis: asistencia.fk_id_aprend_asis,
+                    nom1_user: asistencia.nom1_user,
+                    ape1_user: asistencia.ape1_user,
+                    ape2_user: asistencia.ape2_user,
+                    // correo_sena_user: asistencia.correo_sena_user,
+                    fk_anteced_salud_sel: asistencia.fk_anteced_salud_sel,
+                    anteced_salud_inp: asistencia.anteced_salud_inp,
+                    fecha_asis: (new Date(asistencia.fecha_asis)).toLocaleDateString()
+                }
+                cont++;
+                return registro;
+            });
+
+            doc.addTable([
+                {key: 'id_registro_asis', label: 'Identificador registro', align: 'left'},
+                {key: 'id_instruc_asis', label: 'Identificación instructor', align: 'left'},
+                // {key: 'fk_id_aprend_asis', label: 'Identificación aprendiz', align: 'left'},
+                {key: 'nom1_user', label: 'P.nombre aprendiz', align: 'left'},
+                {key: 'ape1_user', label: 'P.apellido aprendiz', align: 'left'},
+                {key: 'ape2_user', label: 'S.apellido aprendiz', align: 'left'},
+                // {key: 'correo_sena_user', label: 'Correo aprendiz', align: 'left'},
+                {key: 'fk_anteced_salud_sel', label: 'Antecedentes #1', align: 'left'},
+                {key: 'anteced_salud_inp', label: 'Antecedentes #2', align: 'left'},
+                {key: 'fecha_asis', label: 'Fecha asistencia', align: 'left'},
+            ], datosRegistros, {
+                border: null,
+                // width: "auto",
+                width: "fill_body",
+                striped: true,
+                stripedColors: ["#f6f6f6", "#e3e3e3"],
+                marginLeft: 35,
+                marginRight: 35,
+                // border: {size: 0.1, color: '#b4b4b4'},
+                headFontSize: 6,
+                headAlign: 'center',
+                cellsFontSize: 7,
+                cellsMaxWidth : 90,
+                cellsPadding: 8,
+            })
+
+            doc.render();
+
+
+            doc.end();
+
+
+            // res.json('ok')
+
+        } else {
+
+            // res.json(`No hay registros`)
+
+        }
+    })
+})
+
+app.get('/asistencia_reporte_fecha/:fecha_asis', (req, res) => {
+    const { fecha_asis } = req.params
+
+    const query = `SELECT id_registro_asis, id_instruc_asis, fk_id_aprend_asis, nom1_user, ape1_user, ape2_user, correo_sena_user, fk_anteced_salud_sel, anteced_salud_inp, fecha_asis
+    FROM asistencia
+    INNER JOIN usuarios
+    ON fk_id_aprend_asis=id_user
+    WHERE estado_asis = 1 AND fecha_asis='${fecha_asis}'
+    ORDER BY id_registro_asis ASC`
+    conexion.query(query, (error, resultado) => {
+        if(error) return console.error(error.message)
+
+        if(resultado.length > 0) {
+
+            const doc = new PDF({size: 'A3', bufferPages: true});
+
+            const filenamepdf = `ReporteAsistencias_fecha_${(new Date(resultado[0].fecha_asis)).toLocaleDateString().replace('/','_')}.pdf`;
+            
+            const stream = res.writeHead(200, {
+                'Content-Type': 'application/pdf',
+                'Content-disposition': `attachment; filename=${filenamepdf}`
+            });
+
+            doc.on('data', (data) => {stream.write(data)});
+            doc.on('end', () => {stream.end()});
+
+            // doc.pipe(res);
+            
+            // doc.text('hola mundo con pdfkit', 30, 30);
+
+            // doc.text(resultado[1]['fecha_asis']);
+
+            // doc.pipe(fs.createWriteStream('asistencias.pdf'));
+
+            doc.setDocumentHeader({
+                height: '18%'
+            }, () => {
+                // doc.lineJoin('miter')
+                //     .rect(0, 0, doc.page.width, doc.header.options.heightNumber).fill("#ededed");
+
+                // doc.fill("#115dc8")
+                //     .fontSize(20)
+                //     .text("Hello world header", doc.header.x, doc.header.y);
+                doc.fontSize(17).text('Reporte registros de asistencia según fecha', {
+                    // width: '100%',
+                    align: 'center',
+                    // height: 100,
+                    lineGap: 17,
+                    // indent: 17,
+                    paragraphGap: 17,
+                    
+                })
+
+                doc.fontSize(12);
+
+                let fechaCompletaAct = new Date();
+                let horaCompletaAct = fechaCompletaAct.toLocaleTimeString();
+                let indexLastColon = horaCompletaAct.lastIndexOf(':');
+                let ultimaParteHora = horaCompletaAct.slice(indexLastColon+1,)
+                let ultimaParteHoraFinal = ultimaParteHora.replace(/^.\S/, '');
+                let horaFinal = horaCompletaAct.slice(0,indexLastColon)+ultimaParteHoraFinal
+
+                
+                // doc.text(`Fecha: ${new Date().toISOString().replace(/T/, ' ').replace(/\..+/, '')}, Fecha: ${new Date().toISOString().replace(/\T.+/, '')}, Hora: ${new Date(UTC).toISOString().replace(/^.+T/, '').replace(/\..+/, '')}`, {
+                // doc.text(`Fecha: ${fechaAct.toISOString().replace(/T/, ' ').replace(/\..+/, '')}, Fecha: ${fechaAct.toISOString().replace(/\T.+/, '')}, Hora: ${fechaAct.toLocaleTimeString()}`, {
+                doc.text(`Fecha del reporte: ${fechaCompletaAct.toISOString().replace(/\T.+/, '')}      Hora: ${horaFinal}`, {
+                    width: 420,
+                    align: 'left',
+                    height: 150,
+                    lineGap: 7,
+                    // indent: 5,
+                    paragraphGap: 7,
+                })
+                doc.text(`Registros de asistencia tomados en la fecha: ${(new Date(resultado[0].fecha_asis)).toISOString().replace(/\T.+/, '')}`, {
+                    width: 420,
+                    align: 'left',
+                    height: 150,
+                    lineGap: 7,
+                    // indent: 5,
+                    paragraphGap: 7,
+                })
+            });
+
+            
+            let cont = 1;
+
+            let datosRegistros = resultado.map((asistencia) => {
+                const registro = {
+                    id_registro_asis: asistencia.id_registro_asis,
+                    id_instruc_asis: asistencia.id_instruc_asis,
+                    fk_id_aprend_asis: asistencia.fk_id_aprend_asis,
+                    nom1_user: asistencia.nom1_user,
+                    ape1_user: asistencia.ape1_user,
+                    ape2_user: asistencia.ape2_user,
+                    correo_sena_user: asistencia.correo_sena_user,
+                    fk_anteced_salud_sel: asistencia.fk_anteced_salud_sel,
+                    anteced_salud_inp: asistencia.anteced_salud_inp,
+                    // fecha_asis: (new Date(asistencia.fecha_asis)).toLocaleDateString()
+                }
+                cont++;
+                return registro;
+            });
+
+            doc.addTable([
+                {key: 'id_registro_asis', label: 'Identificador registro', align: 'left'},
+                {key: 'id_instruc_asis', label: 'Identificación instructor', align: 'left'},
+                {key: 'fk_id_aprend_asis', label: 'Identificación aprendiz', align: 'left'},
+                {key: 'nom1_user', label: 'P.nombre aprendiz', align: 'left'},
+                {key: 'ape1_user', label: 'P.apellido aprendiz', align: 'left'},
+                {key: 'ape2_user', label: 'S.apellido aprendiz', align: 'left'},
+                {key: 'correo_sena_user', label: 'Correo aprendiz', align: 'left'},
+                {key: 'fk_anteced_salud_sel', label: 'Antecedentes #1', align: 'left'},
+                {key: 'anteced_salud_inp', label: 'Antecedentes #2', align: 'left'},
+                // {key: 'fecha_asis', label: 'Fecha asistencia', align: 'left'},
+            ], datosRegistros, {
+                border: null,
+                // width: "auto",
+                width: "fill_body",
+                striped: true,
+                stripedColors: ["#f6f6f6", "#e3e3e3"],
+                marginLeft: 35,
+                marginRight: 35,
+                // border: {size: 0.1, color: '#b4b4b4'},
+                headFontSize: 6,
+                headAlign: 'center',
+                cellsFontSize: 7,
+                cellsMaxWidth : 90,
+                cellsPadding: 8,
+            })
+
+            doc.render();
+
+
+            doc.end();
+
+
+            // res.json('ok')
+
+        } else {
+
+            // res.json(`No hay registros`)
+
+        }
+    })
+})
+
 

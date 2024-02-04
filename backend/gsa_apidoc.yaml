@@ -246,6 +246,28 @@ paths:
         500:
           $ref: '#/components/responses/ServerError'
 
+  /validacion_existencia_usuarios:
+    get:
+      tags:
+        - Usuarios
+      summary: Corroboración existencia de usuarios en el sistema
+      description: Con esta dirección se verifica si existen o no usuarios dentro del sistema
+      responses:
+        200:
+          description: (OK) Se ejecutó la petición de corroboración de existencia de usuarios en el sistema de manera satisfactoria
+          content:
+            aplication/json:
+              schema:
+                $ref: '#/components/schemas/ExitoUsuariosValidacion'
+        400:
+          $ref: '#/components/responses/BadRequest'
+        401:
+          $ref: '#/components/responses/Unauthorized'
+        404:
+          $ref: '#/components/responses/NotFound'
+        500:
+          $ref: '#/components/responses/ServerError'
+
   /usuarios_listado:
     get:
       tags:
@@ -259,6 +281,30 @@ paths:
             aplication/json:
               schema:
                 $ref: '#/components/schemas/ExitoGetUsuarios'
+        400:
+          $ref: '#/components/responses/BadRequest'
+        401:
+          $ref: '#/components/responses/Unauthorized'
+        404:
+          $ref: '#/components/responses/NotFound'
+        500:
+          $ref: '#/components/responses/ServerError'
+  
+  /validacion_existencia_usuarios/{id_user}:
+    get:
+      tags:
+        - Usuarios
+      summary: Corroboración existencia de un usuario dentro del sistema
+      description: Con esta dirección se verifica si existe o no un usuario específico dentro del sistema
+      parameters:
+        - $ref: '#/components/parameters/id_user'
+      responses:
+        200:
+          description: (OK) Se ejecutó la petición de corroboración de existencia del usuario en el sistema de manera satisfactoria
+          content:
+            aplication/json:
+              schema:
+                $ref: '#/components/schemas/ExitoUsuarioValidacion'
         400:
           $ref: '#/components/responses/BadRequest'
         401:
@@ -291,7 +337,7 @@ paths:
           $ref: '#/components/responses/NotFound'
         500:
           $ref: '#/components/responses/ServerError'
-          
+  
   /usuarios_edicion/{id_user}:
     put:
       tags:
@@ -314,6 +360,52 @@ paths:
             aplication/json:
               schema:
                 $ref: '#/components/schemas/ExitoUsuariosActualizacion'
+        400:
+          $ref: '#/components/responses/BadRequest'
+        401:
+          $ref: '#/components/responses/Unauthorized'
+        404:
+          $ref: '#/components/responses/NotFound'
+        500:
+          $ref: '#/components/responses/ServerError'
+
+  /usuarios_reporte:
+    get:
+      tags:
+        - Usuarios
+      summary: Creación de reporte de los usuarios del sistema
+      description: Con esta dirección se genera un archivo pdf con la información de los usuarios registrados en el sistema
+      responses:
+        200:
+          description: (OK) Se ejecutó la petición de generación del reporte de los usuarios del sistema de manera satisfactoria
+          content:
+            aplication/pdf:
+              schema:
+                $ref: '#/components/schemas/ExitoReporteUsuarios'
+        400:
+          $ref: '#/components/responses/BadRequest'
+        401:
+          $ref: '#/components/responses/Unauthorized'
+        404:
+          $ref: '#/components/responses/NotFound'
+        500:
+          $ref: '#/components/responses/ServerError'
+  
+  /usuarios_reporte/{id_user}:
+    get:
+      tags:
+        - Usuarios
+      summary: Creación de reporte de un usuario del sistema
+      description: Con esta dirección se genera un archivo pdf con la información del usuario del sistema al que corresponde la identificación pasada por parámetro
+      parameters:
+        - $ref: '#/components/parameters/id_user'
+      responses:
+        200:
+          description: (OK) Se ejecutó la petición de generación del reporte del usuario de manera satisfactoria
+          content:
+            aplication/pdf:
+              schema:
+                $ref: '#/components/schemas/ExitoReporteUsuario'
         400:
           $ref: '#/components/responses/BadRequest'
         401:
@@ -530,6 +622,52 @@ paths:
         500:
           $ref: '#/components/responses/ServerError'
   
+  /validacion_existencia_registros_planificador:
+    get:
+      tags:
+        - Planificador de rutinas
+      summary: Corroboración existencia de registros en el planificador de rutinas
+      description: Con esta dirección se verifica si existen o no registros de rutinas de los aprendices dentro de la tabla correspondiente en la base de datos
+      responses:
+        200:
+          description: (OK) Se ejecutó la petición de corroboración de existencia de registros de rutinas de aprendices en el sistema de manera satisfactoria
+          content:
+            aplication/json:
+              schema:
+                $ref: '#/components/schemas/ExitoRutinasValidacion'
+        400:
+          $ref: '#/components/responses/BadRequest'
+        401:
+          $ref: '#/components/responses/Unauthorized'
+        404:
+          $ref: '#/components/responses/NotFound'
+        500:
+          $ref: '#/components/responses/ServerError'
+  
+  /validacion_existencia_registros_planificador/{id_user}:
+    get:
+      tags:
+        - Planificador de rutinas
+      summary: Corroboración existencia de registros de aprendiz en el planificador de rutinas
+      description: Con esta dirección se verifica si existen o no registros de rutinas de un aprendiz específico dentro del sistema
+      parameters:
+        - $ref: '#/components/parameters/id_user'
+      responses:
+        200:
+          description: (OK) Se ejecutó la petición de corroboración de existencia de registros de rutinas de un aprendiz específico en el sistema de manera satisfactoria
+          content:
+            aplication/json:
+              schema:
+                $ref: '#/components/schemas/ExitoRutinasPlanificadasAprendizValidacion'
+        400:
+          $ref: '#/components/responses/BadRequest'
+        401:
+          $ref: '#/components/responses/Unauthorized'
+        404:
+          $ref: '#/components/responses/NotFound'
+        500:
+          $ref: '#/components/responses/ServerError'
+
   /planificador:
     post:
       tags:
@@ -583,6 +721,74 @@ paths:
         500:
           $ref: '#/components/responses/ServerError'
   
+  /planificador_aprendices_reporte:
+    get:
+      tags:
+        - Planificador de rutinas
+      summary: Creación de reporte de registros del planificador de rutinas de los aprendices del sistema
+      description: Con esta dirección se genera un archivo pdf con la información de los registros guardados en el planificador de rutinas del sistema
+      responses:
+        200:
+          description: (OK) Se ejecutó la petición de generación del reporte del planificador de rutinas del sistema de manera satisfactoria
+          content:
+            aplication/pdf:
+              schema:
+                $ref: '#/components/schemas/ExitoReportePlanificadorRutinas'
+        400:
+          $ref: '#/components/responses/BadRequest'
+        401:
+          $ref: '#/components/responses/Unauthorized'
+        404:
+          $ref: '#/components/responses/NotFound'
+        500:
+          $ref: '#/components/responses/ServerError'
+  
+  /planificador_aprendices_reporte/{id_user}:
+    get:
+      tags:
+        - Planificador de rutinas
+      summary: Creación de reporte de registros del planificador de rutinas de un aprendiz del sistema
+      description: Con esta dirección se genera un archivo pdf con los registros del planificador de rutinas correspondientes a un aprendiz cuya identificación es pasada por parámetro
+      parameters:
+        - $ref: '#/components/parameters/id_user'
+      responses:
+        200:
+          description: (OK) Se ejecutó la petición de generación del reporte de los registros de las rutinas planificadas por un aprendiz específico de manera satisfactoria
+          content:
+            aplication/pdf:
+              schema:
+                $ref: '#/components/schemas/ExitoReportePlanificadorRutinasAprendizEspecifico'
+        400:
+          $ref: '#/components/responses/BadRequest'
+        401:
+          $ref: '#/components/responses/Unauthorized'
+        404:
+          $ref: '#/components/responses/NotFound'
+        500:
+          $ref: '#/components/responses/ServerError'
+
+  /validacion_existencia_asistencias:
+    get:
+      tags:
+        - Asistencias
+      summary: Corroboración existencia de registros de asistencia en el sistema
+      description: Con esta dirección se verifica si existen o no registros de asistencia de aprendices al gimnasio dentro del sistema
+      responses:
+        200:
+          description: (OK) Se ejecutó la petición de corroboración de existencia de registros de asistencia en el sistema de manera satisfactoria
+          content:
+            aplication/json:
+              schema:
+                $ref: '#/components/schemas/ExitoAsistenciasValidacion'
+        400:
+          $ref: '#/components/responses/BadRequest'
+        401:
+          $ref: '#/components/responses/Unauthorized'
+        404:
+          $ref: '#/components/responses/NotFound'
+        500:
+          $ref: '#/components/responses/ServerError'
+
   /asistencia_listado:
     get:
       tags:
@@ -629,19 +835,14 @@ paths:
         500:
           $ref: '#/components/responses/ServerError'
   
-  /asistencia_listado_aprend:
-    post:
+  /asistencia_listado_aprend/{fk_id_aprend_asis}:
+    get:
       tags:
         - Asistencias
       summary: Corroboración existencia del aprendiz dentro del sistema
       description: Con esta dirección se corroborará la existencia del aprendiz al que se le está tomando la asistencia dentro del sistema de información, de tal forma que se ejecutará una busqueda para determinar si la identificación enviada corresponde a la de un usuario activo en el sistema con el rol de aprendiz dentro del mismo
-      requestBody:
-        description: Objeto de datos en el cuerpo de la petición (en este caso contiene la identificación del aprendiz)
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/AsistenciaCorroboracionAprendiz'
-        required: true
+      parameters:
+        - $ref: '#/components/parameters/fk_id_aprend_asis'
       responses:
         200:
           description: (OK) Se ejecutó la petición de corroboración de existencia del usuario como aprendiz dentro del sistema satisfactoriamente
@@ -649,6 +850,54 @@ paths:
             aplication/json:
               schema:
                 $ref: '#/components/schemas/ExitoAsistenciaCorroboracionAprendiz'
+        400:
+          $ref: '#/components/responses/BadRequest'
+        401:
+          $ref: '#/components/responses/Unauthorized'
+        404:
+          $ref: '#/components/responses/NotFound'
+        500:
+          $ref: '#/components/responses/ServerError'
+  
+  /validacion_existencia_asistencias_id/{fk_id_aprend_asis}:
+    get:
+      tags:
+        - Asistencias
+      summary: Corroboración de asistencia de un aprendiz al gimnasio
+      description: Con esta dirección se verifica si existen o no registros de asistencia de un aprendiz al gimnasio
+      parameters:
+        - $ref: '#/components/parameters/fk_id_aprend_asis'
+      responses:
+        200:
+          description: (OK) Se ejecutó la petición de corroboración de existencia de registros de asistencia de un aprendiz específico en el sistema de manera satisfactoria
+          content:
+            aplication/json:
+              schema:
+                $ref: '#/components/schemas/ExitoAsistenciasValidacionIdAprendiz'
+        400:
+          $ref: '#/components/responses/BadRequest'
+        401:
+          $ref: '#/components/responses/Unauthorized'
+        404:
+          $ref: '#/components/responses/NotFound'
+        500:
+          $ref: '#/components/responses/ServerError'
+  
+  /validacion_existencia_asistencias_fecha/{fecha_asis}:
+    get:
+      tags:
+        - Asistencias
+      summary: Corroboración de existencia de registros de asistencia tomados en una fecha específica
+      description: Con esta dirección se verifica si existen o no registros de asistencia de aprendices al gimnasio tomados en una fecha específica
+      parameters:
+        - $ref: '#/components/parameters/fecha_asis'
+      responses:
+        200:
+          description: (OK) Se ejecutó la petición de corroboración de existencia de registros de asistencia de aprendices en una fecha específica en el sistema de manera satisfactoria
+          content:
+            aplication/json:
+              schema:
+                $ref: '#/components/schemas/ExitoAsistenciasValidacionFecha'
         400:
           $ref: '#/components/responses/BadRequest'
         401:
@@ -742,6 +991,52 @@ paths:
         500:
           $ref: '#/components/responses/ServerError'
 
+  /asistencia_reporte:
+    get:
+      tags:
+        - Asistencias
+      summary: Creación de reporte de los registros de asistencia de aprendices al gimnasio
+      description: Con esta dirección se genera un archivo pdf con la información de los registros de asistencia de aprendices al gimnasio guardados en el sistema
+      responses:
+        200:
+          description: (OK) Se ejecutó la petición de generación del reporte de los registros de asistencia del sistema de manera satisfactoria
+          content:
+            aplication/pdf:
+              schema:
+                $ref: '#/components/schemas/ExitoReporteAsistencias'
+        400:
+          $ref: '#/components/responses/BadRequest'
+        401:
+          $ref: '#/components/responses/Unauthorized'
+        404:
+          $ref: '#/components/responses/NotFound'
+        500:
+          $ref: '#/components/responses/ServerError'
+
+  /asistencia_reporte_id/{id_user}:
+    get:
+      tags:
+        - Asistencias
+      summary: Creación de reporte de los registros de asistencia de un aprendiz al gimnasio
+      description: Con esta dirección se genera un archivo pdf con los registros de asistencia al gimnasio correspondientes a un aprendiz cuya identificación es pasada por parámetro
+      parameters:
+        - $ref: '#/components/parameters/id_user'
+      responses:
+        200:
+          description: (OK) Se ejecutó la petición de generación del reporte de los registros de asistencia de un aprendiz específico al gimnasio de manera satisfactoria
+          content:
+            aplication/pdf:
+              schema:
+                $ref: '#/components/schemas/ExitoReporteAsistenciasAprendizEspecifico'
+        400:
+          $ref: '#/components/responses/BadRequest'
+        401:
+          $ref: '#/components/responses/Unauthorized'
+        404:
+          $ref: '#/components/responses/NotFound'
+        500:
+          $ref: '#/components/responses/ServerError'
+
 components:
 
   responses:
@@ -802,6 +1097,25 @@ components:
       schema:
         type: integer
         example: 1
+        
+    fk_id_aprend_asis:
+      name: fk_id_aprend_asis
+      in: path
+      description: Identificación del aprendiz pasada como parámetro
+      required: true
+      schema:
+        type: integer
+        example: 2
+    
+    fecha_asis:
+      name: fecha_asis
+      in: path
+      description: Fecha de creación de un registro de asistencia pasada como parámetro
+      required: true
+      schema:
+        type: string
+        format: date
+        example: 2024-02-02
 
   schemas:
   
@@ -1033,14 +1347,6 @@ components:
           type: string
           description: Nombre del músculo elegido por el aprendiz en el selector
           example: Triceps
-    
-    AsistenciaCorroboracionAprendiz:
-      type: object
-      properties:
-        fk_id_aprend_asis:
-          type: integer
-          description: Identificación del aprendiz al que se le van a corroborar las credenciales
-          example: 2
 
     AsistenciaAgregar:
       type: object
@@ -1117,6 +1423,16 @@ components:
             type: integer
             description: Id del usuario que está iniciando sesión en el sistema
             example: 1028763822
+    
+    ExitoUsuariosValidacion:
+      type: string
+      description: Resultado del proceso de corroboración de la existencia de usuarios dentro del sistema
+      example: Si hay registros
+    
+    ExitoUsuarioValidacion:
+      type: string
+      description: Resultado del proceso de corroboración de la existencia de un usuario específico dentro del sistema
+      example: Si existe
     
     ExitoGetUsuarios:
       type: array
@@ -1214,6 +1530,16 @@ components:
       type: string
       description: Resultado del proceso de actualización de un usuario del sistema
       example: Se actualizó correctamente el usuario
+      
+    ExitoReporteUsuarios:
+      type: string
+      format: binary
+      description: Archivo reporte de los usuarios del sistema
+    
+    ExitoReporteUsuario:
+      type: string
+      format: binary
+      description: Archivo reporte con la información de un usuario del sistema
 
     ExitoCorroboracionImg:
       type: string
@@ -1279,6 +1605,16 @@ components:
             type: string
             description: Nombre del músculo
             example: Biceps
+    
+    ExitoRutinasValidacion:
+      type: string
+      description: Resultado del proceso de corroboración de la existencia de rutinas dentro del sistema
+      example: Si hay registros
+    
+    ExitoRutinasPlanificadasAprendizValidacion:
+      type: string
+      description: Resultado del proceso de corroboración de la existencia de rutinas de un aprendiz específico dentro del sistema
+      example: Si hay registros
 
     ExitoPlanificadorAgregar:
       type: string
@@ -1302,6 +1638,21 @@ components:
             type: string
             description: Nombre de la imagen correspondiente al ejercicio anteriormente propuesto
             example: ej01.png
+
+    ExitoReportePlanificadorRutinas:
+      type: string
+      format: binary
+      description: Archivo reporte de los registros del planificador de rutinas del sistema
+    
+    ExitoReportePlanificadorRutinasAprendizEspecifico:
+      type: string
+      format: binary
+      description: Archivo reporte de los registros del planificador de rutinas del sistema correspondientes a un aprendiz específico
+    
+    ExitoAsistenciasValidacion:
+      type: string
+      description: Resultado del proceso de corroboración de la existencia de registros de asistencia dentro del sistema
+      example: Si hay registros
 
     ExitoGetAsistencias:
       type: array
@@ -1377,8 +1728,18 @@ components:
     
     ExitoAsistenciaCorroboracionAprendiz:
       type: string
-      description: Resultado del proceso de corroboración del rol de aprendiz del usuario del que se obtuvo la identificación en el registro de asistencias
+      description: Resultado del proceso de corroboración del rol de aprendiz del usuario del que se obtuvo la identificación en el registro o actualización de asistencias
       example: Si existe
+    
+    ExitoAsistenciasValidacionIdAprendiz:
+      type: string
+      description: Resultado del proceso de corroboración de la existencia de registros de asistencia de un aprendiz al gimnasio dentro del sistema
+      example: Si hay registros
+    
+    ExitoAsistenciasValidacionFecha:
+      type: string
+      description: Resultado del proceso de corroboración de la existencia de registros de asistencia de aprendices al gimnasio en una fecha específica dentro del sistema
+      example: Si hay registros
     
     ExitoAsistenciaAgregar:
       type: string
@@ -1394,4 +1755,14 @@ components:
       type: string
       description: Resultado del proceso de eliminación de un registro de asistencia dentro del sistema
       example: Se eliminó correctamente el registro de asistencia
+
+    ExitoReporteAsistencias:
+      type: string
+      format: binary
+      description: Archivo reporte de los registros de asistencia del sistema
+
+    ExitoReporteAsistenciasAprendizEspecifico:
+      type: string
+      format: binary
+      description: Archivo reporte de los registros de asistencia al gimnasio correspondientes a un aprendiz específico
 
