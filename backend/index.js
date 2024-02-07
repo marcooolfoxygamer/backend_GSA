@@ -502,6 +502,86 @@ app.get('/usuarios_listado/:id_user', (req, res) => {
 })
 
 
+app.get('/usuarios_listado_filtrado_id/:id_user', (req, res) => {
+    const { id_user } = req.params
+
+    const query = `SELECT id_user, fk_tipo_user, tipo_user, nom1_user, nom2_user, ape1_user, ape2_user, correo_sena_user, fk_anteced_salud_sel, anteced_salud_inp, estado_user
+    FROM usuarios
+    INNER JOIN tipos_usuarios
+    ON fk_tipo_user = cod_tipo_user
+    WHERE id_user LIKE '${id_user}%'`
+    conexion.query(query, (error, resultado) => {
+        if(error) return console.error(error.message)
+
+        if(resultado.length > 0) {
+            res.json(resultado)
+        } else {
+            res.json(`No hay registros`)
+        }
+    })
+})
+
+
+app.get('/usuarios_listado_filtrado_nombre1/:nom1_user', (req, res) => {
+    const { nom1_user } = req.params
+
+    const query = `SELECT id_user, fk_tipo_user, tipo_user, nom1_user, nom2_user, ape1_user, ape2_user, correo_sena_user, fk_anteced_salud_sel, anteced_salud_inp, estado_user
+    FROM usuarios
+    INNER JOIN tipos_usuarios
+    ON fk_tipo_user = cod_tipo_user
+    WHERE LOWER(nom1_user) LIKE LOWER('${nom1_user}%')`
+    conexion.query(query, (error, resultado) => {
+        if(error) return console.error(error.message)
+
+        if(resultado.length > 0) {
+            res.json(resultado)
+        } else {
+            res.json(`No hay registros`)
+        }
+    })
+})
+
+
+app.post('/usuarios_listado_filtrado_nombres', (req, res) => {
+    const { nom1_user, ape1_user } = req.body
+
+    const query = `SELECT id_user, fk_tipo_user, tipo_user, nom1_user, nom2_user, ape1_user, ape2_user, correo_sena_user, fk_anteced_salud_sel, anteced_salud_inp, estado_user
+    FROM usuarios
+    INNER JOIN tipos_usuarios
+    ON fk_tipo_user = cod_tipo_user
+    WHERE LOWER(nom1_user) LIKE LOWER('${nom1_user}%') AND LOWER(ape1_user) LIKE LOWER('${ape1_user}%')`
+    conexion.query(query, (error, resultado) => {
+        if(error) return console.error(error.message)
+
+        if(resultado.length > 0) {
+            res.json(resultado)
+        } else {
+            res.json(`No hay registros`)
+        }
+    })
+})
+
+
+app.get('/usuarios_listado_filtrado_rol/:fk_tipo_user', (req, res) => {
+    const { fk_tipo_user } = req.params
+
+    const query = `SELECT id_user, fk_tipo_user, tipo_user, nom1_user, nom2_user, ape1_user, ape2_user, correo_sena_user, fk_anteced_salud_sel, anteced_salud_inp, estado_user
+    FROM usuarios
+    INNER JOIN tipos_usuarios
+    ON fk_tipo_user = cod_tipo_user
+    WHERE fk_tipo_user='${fk_tipo_user}'`
+    conexion.query(query, (error, resultado) => {
+        if(error) return console.error(error.message)
+
+        if(resultado.length > 0) {
+            res.json(resultado)
+        } else {
+            res.json(`No hay registros`)
+        }
+    })
+})
+
+
 app.put('/usuarios_edicion/:id_user', (req, res) => {
     const { id_user } = req.params
     let {
@@ -525,6 +605,7 @@ app.put('/usuarios_edicion/:id_user', (req, res) => {
         res.json(`Se actualizó correctamente el usuario`)
     })
 })
+
 
 app.get('/usuarios_reporte', (req, res) => {
     const query = `SELECT id_user, tipo_user, nom1_user, ape1_user, ape2_user, correo_sena_user, fk_anteced_salud_sel, anteced_salud_inp, estado_user
@@ -1239,6 +1320,116 @@ app.get('/validacion_existencia_asistencias_fecha/:fecha_asis', (req, res) => {
         }
     })
 })
+
+
+app.get('/asistencia_listado_filtrado_id_instructor/:id_instruc_asis', (req, res) => {
+    const { id_instruc_asis } = req.params
+
+    const query = `SELECT id_registro_asis, id_instruc_asis, fk_id_aprend_asis, nom1_user, ape1_user, ape2_user, correo_sena_user, fk_anteced_salud_sel, anteced_salud_inp, fecha_asis 
+    FROM asistencia
+    INNER JOIN usuarios
+    ON fk_id_aprend_asis=id_user
+    WHERE estado_asis = 1 AND id_instruc_asis LIKE '${id_instruc_asis}%'
+    ORDER BY fecha_asis DESC`
+    conexion.query(query, (error, resultado) => {
+        if(error) return console.error(error.message)
+
+        if(resultado.length > 0) {
+            res.json(resultado)
+        } else {
+            res.json(`No hay registros`)
+        }
+    })
+})
+
+
+app.get('/asistencia_listado_filtrado_id_aprendiz/:fk_id_aprend_asis', (req, res) => {
+    const { fk_id_aprend_asis } = req.params
+
+    const query = `SELECT id_registro_asis, id_instruc_asis, fk_id_aprend_asis, nom1_user, ape1_user, ape2_user, correo_sena_user, fk_anteced_salud_sel, anteced_salud_inp, fecha_asis 
+    FROM asistencia
+    INNER JOIN usuarios
+    ON fk_id_aprend_asis=id_user
+    WHERE estado_asis = 1 AND fk_id_aprend_asis LIKE '${fk_id_aprend_asis}%'
+    ORDER BY fecha_asis DESC`
+    conexion.query(query, (error, resultado) => {
+        if(error) return console.error(error.message)
+
+        if(resultado.length > 0) {
+            res.json(resultado)
+        } else {
+            res.json(`No hay registros`)
+        }
+    })
+})
+
+
+app.get('/asistencia_listado_filtrado_nombre1/:nom1_user', (req, res) => {
+    const { nom1_user } = req.params
+
+    const query = `SELECT id_registro_asis, id_instruc_asis, fk_id_aprend_asis, nom1_user, ape1_user, ape2_user, correo_sena_user, fk_anteced_salud_sel, anteced_salud_inp, fecha_asis 
+    FROM asistencia
+    INNER JOIN usuarios
+    ON fk_id_aprend_asis=id_user
+    WHERE estado_asis = 1 AND LOWER(nom1_user) LIKE LOWER('${nom1_user}%')
+    ORDER BY fecha_asis DESC`
+    conexion.query(query, (error, resultado) => {
+        if(error) return console.error(error.message)
+
+        if(resultado.length > 0) {
+            res.json(resultado)
+        } else {
+            res.json(`No hay registros`)
+        }
+    })
+})
+
+
+app.post('/asistencia_listado_filtrado_nombres', (req, res) => {
+    const { nom1_user, ape1_user } = req.body
+
+    const query = `SELECT id_registro_asis, id_instruc_asis, fk_id_aprend_asis, nom1_user, ape1_user, ape2_user, correo_sena_user, fk_anteced_salud_sel, anteced_salud_inp, fecha_asis 
+    FROM asistencia
+    INNER JOIN usuarios
+    ON fk_id_aprend_asis=id_user
+    WHERE estado_asis = 1 AND LOWER(nom1_user) LIKE LOWER('${nom1_user}%') AND LOWER(ape1_user) LIKE LOWER('${ape1_user}%')
+    ORDER BY fecha_asis DESC`
+    conexion.query(query, (error, resultado) => {
+        if(error) return console.error(error.message)
+
+        if(resultado.length > 0) {
+            res.json(resultado)
+        } else {
+            res.json(`No hay registros`)
+        }
+    })
+})
+
+
+app.get('/asistencia_listado_filtrado_fecha/:fecha_asis', (req, res) => {
+    const { fecha_asis } = req.params
+
+    const query = `SELECT id_registro_asis, id_instruc_asis, fk_id_aprend_asis, nom1_user, ape1_user, ape2_user, correo_sena_user, fk_anteced_salud_sel, anteced_salud_inp, fecha_asis 
+    FROM asistencia
+    INNER JOIN usuarios
+    ON fk_id_aprend_asis=id_user
+    WHERE estado_asis = 1 AND fecha_asis='${fecha_asis}'
+    ORDER BY fecha_asis DESC`
+    conexion.query(query, (error, resultado) => {
+        if(error) return console.error(error.message)
+
+        if(resultado.length > 0) {
+            res.json(resultado)
+        } else {
+            res.json(`No hay registros`)
+        }
+    })
+})
+
+
+
+
+
 
 
 app.post('/asistencia_agregar', (req,res) => {

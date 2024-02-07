@@ -338,6 +338,107 @@ paths:
         500:
           $ref: '#/components/responses/ServerError'
   
+  /usuarios_listado_filtrado_id/{id_user}:
+    get:
+      tags:
+        - Usuarios
+      summary: Obtención de uno o varios usuarios del sistema filtrados según su identificación
+      description: Con esta dirección se obtiene la información de uno o varios de los usuarios registrados en el sistema, teniendo en cuenta que con esta dirección se obtienen todos los registros de usuarios cuya identificación empiece con el o los números que se pasen por parámetro
+      parameters:
+        - $ref: '#/components/parameters/id_user'
+      responses:
+        200:
+          description: (OK) Se ejecutó la petición de obtención del o de los usuarios filtrados según números de su número de identificación de manera satisfactoria
+          content:
+            aplication/json:
+              schema:
+                $ref: '#/components/schemas/ExitoGetUsuario'
+        400:
+          $ref: '#/components/responses/BadRequest'
+        401:
+          $ref: '#/components/responses/Unauthorized'
+        404:
+          $ref: '#/components/responses/NotFound'
+        500:
+          $ref: '#/components/responses/ServerError'
+  
+  /usuarios_listado_filtrado_nombre1/{nom1_user}:
+    get:
+      tags:
+        - Usuarios
+      summary: Obtención de uno o varios usuarios del sistema filtrados según su primer nombre
+      description: Con esta dirección se obtiene la información de uno o varios de los usuarios registrados en el sistema, teniendo en cuenta que con esta dirección se obtienen todos los registros de usuarios cuyo primer nombre empiece con la o las letras que se pasen por parámetro
+      parameters:
+        - $ref: '#/components/parameters/nom1_user'
+      responses:
+        200:
+          description: (OK) Se ejecutó la petición de obtención del o de los usuarios filtrados según letras de su primer nombre de manera satisfactoria
+          content:
+            aplication/json:
+              schema:
+                $ref: '#/components/schemas/ExitoGetUsuario'
+        400:
+          $ref: '#/components/responses/BadRequest'
+        401:
+          $ref: '#/components/responses/Unauthorized'
+        404:
+          $ref: '#/components/responses/NotFound'
+        500:
+          $ref: '#/components/responses/ServerError'
+  
+  /usuarios_listado_filtrado_nombres:
+    post:
+      tags:
+        - Usuarios
+      summary: Obtención de uno o varios usuarios del sistema filtrados según su primer nombre y primer apellido
+      description: Con esta dirección se obtiene la información de uno o varios de los usuarios registrados en el sistema, teniendo en cuenta que con esta dirección se obtienen todos los registros de usuarios cuyo primer nombre empiece con la o las letras que se pasen en el cuerpo de la petición como el primer nombre de estos, así como también su primer apellido empiece con la o las letras que se pasen en el cuerpo de la petición como primer apellido
+      requestBody:
+        description: Objeto de datos en el cuerpo de la petición (en este caso contiene letras del primer nombre y otras del primer apellido del usuario)
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FiltroNombres'
+        required: true
+      responses:
+        200:
+          description: (OK) Se ejecutó la petición de obtención del o de los usuarios filtrados según letras de su primer nombre y de su primer apellido de manera satisfactoria
+          content:
+            aplication/json:
+              schema:
+                $ref: '#/components/schemas/ExitoGetUsuario'
+        400:
+          $ref: '#/components/responses/BadRequest'
+        401:
+          $ref: '#/components/responses/Unauthorized'
+        404:
+          $ref: '#/components/responses/NotFound'
+        500:
+          $ref: '#/components/responses/ServerError'
+  
+  /usuarios_listado_filtrado_rol/{fk_tipo_user}:
+    get:
+      tags:
+        - Usuarios
+      summary: Obtención de uno o varios usuarios del sistema filtrados según su rol dentro de este
+      description: Con esta dirección se obtiene la información de uno o varios de los usuarios registrados en el sistema, teniendo en cuenta que con esta dirección se obtienen todos los registros de usuarios cuyo rol sea el pasado por parámetro
+      parameters:
+        - $ref: '#/components/parameters/fk_tipo_user'
+      responses:
+        200:
+          description: (OK) Se ejecutó la petición de obtención del o de los usuarios filtrados según su rol dentro del sistema de manera satisfactoria
+          content:
+            aplication/json:
+              schema:
+                $ref: '#/components/schemas/ExitoGetUsuario'
+        400:
+          $ref: '#/components/responses/BadRequest'
+        401:
+          $ref: '#/components/responses/Unauthorized'
+        404:
+          $ref: '#/components/responses/NotFound'
+        500:
+          $ref: '#/components/responses/ServerError'
+  
   /usuarios_edicion/{id_user}:
     put:
       tags:
@@ -840,7 +941,7 @@ paths:
       tags:
         - Asistencias
       summary: Corroboración existencia del aprendiz dentro del sistema
-      description: Con esta dirección se corroborará la existencia del aprendiz al que se le está tomando la asistencia dentro del sistema de información, de tal forma que se ejecutará una busqueda para determinar si la identificación enviada corresponde a la de un usuario activo en el sistema con el rol de aprendiz dentro del mismo
+      description: Con esta dirección se corroborará la existencia del aprendiz al que se le está tomando la asistencia dentro del sistema de información, de tal forma que se ejecutará una busqueda para determinar si la identificación enviada corresponde a la de un usuario activo en el sistema con el rol de aprendiz dentro de este
       parameters:
         - $ref: '#/components/parameters/fk_id_aprend_asis'
       responses:
@@ -906,6 +1007,132 @@ paths:
           $ref: '#/components/responses/NotFound'
         500:
           $ref: '#/components/responses/ServerError'
+  
+  /asistencia_listado_filtrado_id_instructor/{id_instruc_asis}:
+    get:
+      tags:
+        - Asistencias
+      summary: Obtención de uno o varios registros de asistencia del sistema filtrados según la identificación del instructor
+      description: Con esta dirección se obtiene la información de uno o varios de los registros de asistencia del sistema, teniendo en cuenta que con esta dirección se obtienen todos los registros en los que la identificación del instructor que tomó la asistencia empiece con el o los números que se pasen por parámetro
+      parameters:
+        - $ref: '#/components/parameters/id_instruc_asis'
+      responses:
+        200:
+          description: (OK) Se ejecutó la petición de obtención del o de los registros de asistencia filtrados según números de la identificación del instructor que creó el registro de manera satisfactoria
+          content:
+            aplication/json:
+              schema:
+                $ref: '#/components/schemas/ExitoGetAsistencias'
+        400:
+          $ref: '#/components/responses/BadRequest'
+        401:
+          $ref: '#/components/responses/Unauthorized'
+        404:
+          $ref: '#/components/responses/NotFound'
+        500:
+          $ref: '#/components/responses/ServerError'
+  
+  /asistencia_listado_filtrado_id_aprendiz/{fk_id_aprend_asis}:
+    get:
+      tags:
+        - Asistencias
+      summary: Obtención de uno o varios registros de asistencia del sistema filtrados según la identificación del aprendiz
+      description: Con esta dirección se obtiene la información de uno o varios de los registros de asistencia del sistema, teniendo en cuenta que con esta dirección se obtienen todos los registros en los que la identificación del aprendiz al que se le tomó la asistencia empiece con el o los números que se pasen por parámetro
+      parameters:
+        - $ref: '#/components/parameters/fk_id_aprend_asis'
+      responses:
+        200:
+          description: (OK) Se ejecutó la petición de obtención del o de los registros de asistencia filtrados según números de la identificación del aprendiz al que se le tomó la asistencia al gimnasio de manera satisfactoria
+          content:
+            aplication/json:
+              schema:
+                $ref: '#/components/schemas/ExitoGetAsistencias'
+        400:
+          $ref: '#/components/responses/BadRequest'
+        401:
+          $ref: '#/components/responses/Unauthorized'
+        404:
+          $ref: '#/components/responses/NotFound'
+        500:
+          $ref: '#/components/responses/ServerError'
+  
+  /asistencia_listado_filtrado_nombre1/{nom1_user}:
+    get:
+      tags:
+        - Asistencias
+      summary: Obtención de uno o varios registros de asistencia del sistema filtrados según el primer nombre del aprendiz
+      description: Con esta dirección se obtiene la información de uno o varios de los registros de asistencia del sistema, teniendo en cuenta que con esta dirección se obtienen todos los registros en los que el primer nombre del aprendiz al que se le tomó la asistencia empiece con la o las letras que se pasen por parámetro
+      parameters:
+        - $ref: '#/components/parameters/nom1_user'
+      responses:
+        200:
+          description: (OK) Se ejecutó la petición de obtención del o de los registros de asistencia filtrados según letras del primer nombre del aprendiz al que se le tomó la asistencia al gimnasio de manera satisfactoria
+          content:
+            aplication/json:
+              schema:
+                $ref: '#/components/schemas/ExitoGetAsistencias'
+        400:
+          $ref: '#/components/responses/BadRequest'
+        401:
+          $ref: '#/components/responses/Unauthorized'
+        404:
+          $ref: '#/components/responses/NotFound'
+        500:
+          $ref: '#/components/responses/ServerError'
+  
+  /asistencia_listado_filtrado_nombres:
+    post:
+      tags:
+        - Asistencias
+      summary: Obtención de uno o varios registros de asistencia del sistema filtrados según el primer nombre y primer apellido del aprendiz
+      description: Con esta dirección se obtiene la información de uno o varios de los registros de asistencia del sistema, teniendo en cuenta que con esta dirección se obtienen todos los registros en los que el primer nombre del aprendiz al que se le tomó la asistencia empiece con la o las letras que se pasen en el cuerpo de la petición como el primer nombre de estos, así como también su primer apellido empiece con la o las letras que se pasen en el cuerpo de la petición como primer apellido
+      requestBody:
+        description: Objeto de datos en el cuerpo de la petición (en este caso contiene letras del primer nombre y otras del primer apellido del aprendiz)
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FiltroNombres'
+        required: true
+      responses:
+        200:
+          description: (OK) Se ejecutó la petición de obtención del o de los registros de asistencia filtrados según letras del primer nombre y del primer apellido del aprendiz al que se le tomó la asistencia al gimnasio de manera satisfactoria
+          content:
+            aplication/json:
+              schema:
+                $ref: '#/components/schemas/ExitoGetAsistencias'
+        400:
+          $ref: '#/components/responses/BadRequest'
+        401:
+          $ref: '#/components/responses/Unauthorized'
+        404:
+          $ref: '#/components/responses/NotFound'
+        500:
+          $ref: '#/components/responses/ServerError'
+  
+  /asistencia_listado_filtrado_fecha/{fecha_asis}:
+    get:
+      tags:
+        - Asistencias
+      summary: Obtención de uno o varios registros de asistencia del sistema filtrados según su fecha de creación
+      description: Con esta dirección se obtiene la información de uno o varios de los registros de asistencia del sistema, teniendo en cuenta que con esta dirección se obtienen todos los registros en los que la fecha de creación de estos haya sido la misma pasada por parámetro
+      parameters:
+        - $ref: '#/components/parameters/fecha_asis'
+      responses:
+        200:
+          description: (OK) Se ejecutó la petición de obtención del o de los registros de asistencia filtrados según la fecha de creación del registro de manera satisfactoria
+          content:
+            aplication/json:
+              schema:
+                $ref: '#/components/schemas/ExitoGetAsistencias'
+        400:
+          $ref: '#/components/responses/BadRequest'
+        401:
+          $ref: '#/components/responses/Unauthorized'
+        404:
+          $ref: '#/components/responses/NotFound'
+        500:
+          $ref: '#/components/responses/ServerError'
+  
   
   /asistencia_agregar:
     post:
@@ -1061,6 +1288,24 @@ components:
       schema:
         type: integer
         example: 1
+    
+    nom1_user:
+      name: nom1_user
+      in: path
+      description: Primer nombre del usuario pasado como parámetro
+      required: true
+      schema:
+        type: string
+        example: J
+    
+    fk_tipo_user:
+      name: fk_tipo_user
+      in: path
+      description: Identificador del rol del usuario pasado como parámetro
+      required: true
+      schema:
+        type: integer
+        example: 1
         
     img_anunc:
       name: img_anunc
@@ -1116,6 +1361,15 @@ components:
         type: string
         format: date
         example: 2024-02-02
+    
+    id_instruc_asis:
+      name: id_instruc_asis
+      in: path
+      description: Identificación del instructor que tomó la asistencia pasada como parámetro
+      required: true
+      schema:
+        type: integer
+        example: 3
 
   schemas:
   
@@ -1223,7 +1477,22 @@ components:
       required:
         - correo_sena_user
         - contrasena
-        
+    
+    FiltroNombres:
+      type: object
+      properties:
+        nom1_user:
+          type: string
+          description: Primer nombre del usuario
+          example: Jua
+        ape1_user:
+          type: string
+          description: Primer apellido del usuario
+          example: Lopez
+      required:
+        - nom1_user
+        - ape1_user
+    
     UsuariosActualizacion:
       type: object
       properties:
@@ -1475,7 +1744,7 @@ components:
             type: integer
             description: Estado del usuario dentro del sistema (activo o inactivo)
             example: 1
-  
+    
     ExitoGetUsuario:
       type: array
       items:
