@@ -61,21 +61,21 @@ create table planificador
 
 create table musculos
 (
-  musculo varchar(30) not null,
+  musculo varchar(50) not null,
   primary key (musculo)
 );
 
 create table ejercicios
 (
-  ejercicio varchar(30) not null,
+  ejercicio varchar(100) not null,
   imagen_ejerc varchar(255) not null,
   primary key (ejercicio)
 );
 
 create table musculos_ejercicios
 (
-  pkfk_musculo varchar(30) not null,
-  pkfk_ejercicio varchar(30) not null,
+  pkfk_musculo varchar(50) not null,
+  pkfk_ejercicio varchar(100) not null,
   primary key (pkfk_musculo, pkfk_ejercicio)
 );
 
@@ -170,34 +170,91 @@ insert into anuncios values
 
 insert into musculos values
 ("Cuadriceps"),
-("Triceps"),
-("Biceps"),
+("Tríceps"),
+("Bíceps"),
 ("Isquiotibiales"),
-("Espalda");
+("Espalda"),
+("Pecho");
 
 insert into ejercicios values
-("Leg-press","ej01.gif"),
-("Extension de pierna", "ej02.gif"),
-("Copa triceps","ej03.gif"),
-("Rompecraneos","ej04.gif"),
-("Curl con mancuernas","ej05.gif"),
-("Dominadas","ej06.gif"),
-("Puente isometrico","ej07.gif"),
-("Curl nordico","ej08.gif"),
-("Jalon al pecho","ej09.gif"),
-("Remo brazo","ej10.gif");
+("Leg-press","leg_press.gif"),
+("Extension de pierna", "extension_de_pierna.gif"),
+("Sentadilla frontal","front_squat.gif"),
+("Sentadillas con salto","jump_squat.gif"),
+("Peso muerto sumo con pesa rusa","kettlebell_deadlift.gif"),
+("Peso muerto con piernas estiradas usando mancuernas","dumbbell_straight_leg_deadlift.gif"),
+("Balanceo de pesa","kettlebell_swings.gif"),
+("Estocadas","lunge.gif"),
+("Copa Tríceps","copa_triceps.gif"),
+("Rompecraneos","rompecraneos.gif"),
+("Tríceps en polea alta","triceps_pressdownn.gif"),
+("Press cerrado con barra","close_grip_bench_press.gif"),
+("Contragolpe","kickback.gif"),
+("Extensión de tríceps con cable de un solo brazo","single_arm_cable_triceps_extension.gif"),
+("Curl con mancuernas","curl_con_mancuernas.gif"),
+("Dominadas","dominadas.gif"),
+("Curl con barra","barbell_curl.gif"),
+("Curl con barra Z en banco Scott","z_bar_preacher_curl.gif"),
+("Curl inclinado con mancuernas","incline_dumbbell_curl.gif"),
+("Curl de cable de polea baja con barra","bar_low_pulley_cable_curl.gif"),
+("Puente isometrico","puente_isometrico.gif"),
+("Curl nordico","curl_nordico.gif"),
+("Sentadillas con peso corporal","bodyweight_squat.gif"),
+("Puente con una sola pierna","single_leg_bridge.gif"),
+("Curl de piernas sentado","seated_leg_curl.gif"),
+("Jalon al pecho","jalon_al_pecho.gif"),
+("Remo brazo","remo_brazo.gif"),
+("Remo con barra","barbell_row.gif"),
+("Peso muerto con barra","barbell_deadlift.gif"),
+("Jalón lateral con brazo recto","straight_arm_lat_pulldown.gif"),
+("Remo inclinado con mancuernas","dumbbell_bent_over_rows.gif"),
+("Peso muerto sumo con barra","barbell_sumo_deadlift.gif"),
+("Barra de press de banca","barbell_bench_press.gif"),
+("Press de banca inclinado con mancuernas","incline_dumbbell_bench_press.gif"),
+("Contractora","peck_deck.gif"),
+("Cruce de cables","cable_crossover.gif"),
+("Press de banca con mancuernas","dumbbell_bench_press.gif"),
+("Aperturas con mancuernas","dumbbell_fly.gif");
 
 insert into musculos_ejercicios values
 ("Cuadriceps","Leg-press"),
 ("Cuadriceps","Extension de pierna"),
-("Triceps","Copa triceps"),
-("Triceps","Rompecraneos"),
-("Biceps","Curl con mancuernas"),
-("Biceps","Dominadas"),
+("Cuadriceps","Sentadilla frontal"),
+("Cuadriceps","Sentadillas con salto"),
+("Cuadriceps","Peso muerto sumo con pesa rusa"),
+("Cuadriceps","Peso muerto con piernas estiradas usando mancuernas"),
+("Cuadriceps","Balanceo de pesa"),
+("Cuadriceps","Estocadas"),
+("Tríceps","Copa Tríceps"),
+("Tríceps","Rompecraneos"),
+("Tríceps","Tríceps en polea alta"),
+("Tríceps","Press cerrado con barra"),
+("Tríceps","Contragolpe"),
+("Tríceps","Extensión de tríceps con cable de un solo brazo"),
+("Bíceps","Curl con mancuernas"),
+("Bíceps","Dominadas"),
+("Bíceps","Curl con barra"),
+("Bíceps","Curl con barra Z en banco Scott"),
+("Bíceps","Curl inclinado con mancuernas"),
+("Bíceps","Curl de cable de polea baja con barra"),
 ("Isquiotibiales","Puente isometrico"),
 ("Isquiotibiales","Curl nordico"),
+("Isquiotibiales","Sentadillas con peso corporal"),
+("Isquiotibiales","Puente con una sola pierna"),
+("Isquiotibiales","Curl de piernas sentado"),
 ("Espalda","Jalon al pecho"),
-("Espalda","Remo brazo");
+("Espalda","Remo brazo"),
+("Espalda","Remo con barra"),
+("Espalda","Peso muerto con barra"),
+("Espalda","Jalón lateral con brazo recto"),
+("Espalda","Remo inclinado con mancuernas"),
+("Espalda","Peso muerto sumo con barra"),
+("Pecho","Barra de press de banca"),
+("Pecho","Press de banca inclinado con mancuernas"),
+("Pecho","Contractora"),
+("Pecho","Cruce de cables"),
+("Pecho","Press de banca con mancuernas"),
+("Pecho","Aperturas con mancuernas");
 
 
 
