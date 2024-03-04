@@ -71,23 +71,22 @@ const PUERTO = 9300
 const conexion = mysql.createConnection(
     
     /* Conexión con base de datos como servicio*/
-    
-    // {
-    //     host:'dbgsammo.helioho.st',
-    //     port:3306,
-    //     database:'mmo_bdgymsenapp',
-    //     user:'mmo_user',
-    //     password:'mn4X9d!46'
-    // }
+    {
+        host:'dbgsammo.helioho.st',
+        port:3306,
+        database:'mmo_bdgymsenapp',
+        user:'mmo_user',
+        password:'mn4X9d!46'
+    }
 
     /* Conexión con base de datos local */
-    {
-        host:'localhost',
-        port:3306,
-        database:'bd_gymsenapp',
-        user:'root',
-        password:''
-    }
+    // {
+    //     host:'localhost',
+    //     port:3306,
+    //     database:'bd_gymsenapp',
+    //     user:'root',
+    //     password:''
+    // }
 )
 
 app.listen(PUERTO, () => {
