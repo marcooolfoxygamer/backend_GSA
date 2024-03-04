@@ -55,7 +55,7 @@ create table planificador
 (
   id_reg_planif integer not null auto_increment,
   fk_id_aprend bigint not null,
-  fk_musculo varchar(30) not null,
+  fk_musculo varchar(50) not null,
   primary key (id_reg_planif)
 );
 
